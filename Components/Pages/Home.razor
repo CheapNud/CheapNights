@@ -1,0 +1,37 @@
+@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Horror Roadmap</PageTitle>
+
+<!-- HEADER -->
+<div class="horror-header">
+    <MudText Class="eyebrow">Co-op Horror Playthrough · 2026</MudText>
+    <div class="horror-title">SURVIVAL HORROR<br />ROADMAP</div>
+    <MudText Class="header-sub">A reverse journey through the classics</MudText>
+    <div class="header-line"><span>◈ TWO PLAYERS ◈</span></div>
+</div>
+
+<!-- NOW PLAYING -->
+<NowPlayingBar />
+
+<!-- SESSION PLANNER -->
+<SessionCalendar />
+
+<!-- RESIDENT EVIL -->
+<RoadmapTable Category="RE" Title="Resident Evil" PublisherLabel="Capcom" />
+
+<!-- SILENT HILL -->
+<RoadmapTable Category="SH" Title="Silent Hill" PublisherLabel="Konami" />
+
+<!-- LEGEND -->
+<div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--done-gold)"></div> Finished / In Progress</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3a86ff"></div> Downloading / Tonight</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--re-red)"></div> RE Essential</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--sh-teal)"></div> SH Essential</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#888"></div> Recommended</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--upcoming)"></div> Upcoming / Rumored</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--skip-grey)"></div> Skip</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--couch)"></div> Couch Co-op</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#b8976a"></div> Movie / Film</div>
+</div>

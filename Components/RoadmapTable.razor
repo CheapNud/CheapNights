@@ -1,0 +1,224 @@
+@inject RoadmapService RoadmapService
+
+<div class="section">
+    <div class="section-header">
+        <span class="section-badge @Category.ToLower()">@PublisherLabel</span>
+        <MudText Typo="Typo.h2" Class="@($"section-title-{Category.ToLower()}")">@Title</MudText>
+        <div class="section-divider @Category.ToLower()"></div>
+    </div>
+
+    <MudTable Items="_entries" Hover="true" Dense="true" Elevation="0" Breakpoint="Breakpoint.None">
+        <HeaderContent>
+            <MudTh Style="width:48px; text-align:center">#</MudTh>
+            <MudTh>Game</MudTh>
+            <MudTh>@(Category == "SH" ? "Flavour" : "Protagonist")</MudTh>
+            <MudTh>@(Category == "SH" ? "Setting" : "Story Era")</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align:center">Length</MudTh>
+            <MudTh>Platform</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Class="@GetRowClasses(context)" Style="text-align:center">
+                @if (context.IsMovie)
+                {
+                    <span class="movie-icon">🎬</span>
+                }
+                else
+                {
+                    <span class="order-badge @GetOrderBadgeClass(context)">@(context.SortLabel ?? "—")</span>
+                }
+            </MudTd>
+            <MudTd Class="@GetRowClasses(context)">
+                <span class="game-name">@context.Name</span>
+                @if (!string.IsNullOrEmpty(context.GameNote))
+                {
+                    <span class="game-note @GetNoteClass(context)">@context.GameNote</span>
+                }
+            </MudTd>
+            <MudTd Class="@GetRowClasses(context)">
+                <span class="protagonist">@context.Protagonist</span>
+            </MudTd>
+            <MudTd Class="@GetRowClasses(context)">
+                <span class="protagonist">@context.StoryEra</span>
+            </MudTd>
+            <MudTd Class="@GetRowClasses(context)">
+                <span class="status-badge @GetStatusBadgeClass(context)">@GetStatusText(context)</span>
+            </MudTd>
+            <MudTd Class="@($"length-col {GetRowClasses(context)}")">
+                @if (context.StarRating > 0)
+                {
+                    <span>
+                        <span class="star-filled">@(new string('★', context.StarRating))</span><span class="star-empty">@(new string('★', 3 - context.StarRating))</span>
+                    </span>
+                }
+                @if (!string.IsNullOrEmpty(context.LengthLabel))
+                {
+                    <span class="length-label">@context.LengthLabel</span>
+                }
+            </MudTd>
+            <MudTd Class="@GetRowClasses(context)">
+                @if (context.IsMovie)
+                {
+                    <span style="color:#555">@GetPlatformDisplay(context)</span>
+                }
+                else
+                {
+                    @GetPlatformMarkup(context)
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</div>
+
+@code {
+    [Parameter] public string Category { get; set; } = "RE";
+    [Parameter] public string Title { get; set; } = "Resident Evil";
+    [Parameter] public string PublisherLabel { get; set; } = "Capcom";
+
+    private List<GameEntry> _entries = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _entries = await RoadmapService.GetByCategoryAsync(Category);
+    }
+
+    private string GetRowClasses(GameEntry entry)
+    {
+        var classes = new List<string>();
+
+        if (entry.IsMovie)
+        {
+            classes.Add("movie-row");
+            return string.Join(" ", classes);
+        }
+
+        classes.Add("game-row");
+
+        var stripeClass = entry.StatusLabel switch
+        {
+            "Done" => "stripe-done",
+            "Essential" => Category == "SH" ? "stripe-essential-sh" : "stripe-essential-re",
+            "Downloading" => "stripe-downloading",
+            "Skip" => "stripe-skip",
+            "Upcoming" => "stripe-upcoming",
+            "Recommended" => "stripe-recommended",
+            _ => ""
+        };
+        if (!string.IsNullOrEmpty(stripeClass)) classes.Add(stripeClass);
+
+        if (entry.StatusLabel == "Done" || entry.IsCompleted) classes.Add("row-done");
+        if (entry.StatusLabel == "Downloading") classes.Add("row-tonight");
+        if (entry.StatusLabel == "Skip") classes.Add("row-skip");
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetOrderBadgeClass(GameEntry entry) => entry.StatusLabel switch
+    {
+        "Downloading" => "active-now",
+        "Done" => "",
+        _ when entry.SortLabel == "2" && Category == "RE" => "next-up",
+        _ when entry.SortLabel == "0" && Category == "SH" => "next-up",
+        _ => ""
+    };
+
+    private string GetStatusBadgeClass(GameEntry entry) => entry.StatusLabel switch
+    {
+        "Done" => "done",
+        "Essential" => Category == "SH" ? "essential-sh" : "essential-re",
+        "Downloading" => "downloading",
+        "Skip" => "skip",
+        "Upcoming" => "upcoming",
+        "Recommended" => "recommended",
+        "Canon" => "movie-canon",
+        "Plex" => "movie-plex",
+        "Optional" => "movie-optional",
+        _ => ""
+    };
+
+    private string GetStatusText(GameEntry entry) => entry.StatusLabel switch
+    {
+        "Done" => "✓ Done",
+        "Essential" when Category == "SH" && entry.Name.Contains("SHORT MESSAGE") => "⭐ Free!",
+        "Essential" when entry.Name.Contains("SEPARATE WAYS") => "⭐ Do Not Skip",
+        "Essential" when Category == "SH" && entry.SortLabel == "1" => "⭐ Start Here",
+        "Essential" => "⭐ Essential",
+        "Downloading" => "⬇ Downloading",
+        "Skip" => "⚠ Skip",
+        "Upcoming" => $"🔜 {entry.StoryEra}",
+        "Recommended" when entry.SortLabel?.Contains('b') == true => "Optional+",
+        "Recommended" => "Recommended",
+        "Canon" => "🎬 Canon",
+        "Plex" => "🟡 On Plex",
+        "Optional" => "Optional",
+        _ => entry.StatusLabel ?? ""
+    };
+
+    private string GetNoteClass(GameEntry entry) => entry.StatusLabel switch
+    {
+        "Done" => "hot",
+        "Downloading" => "active",
+        _ => ""
+    };
+
+    private string GetPlatformDisplay(GameEntry entry)
+    {
+        if (!string.IsNullOrEmpty(entry.PlatformPieter)) return entry.PlatformPieter;
+        if (!string.IsNullOrEmpty(entry.PlatformBrecht)) return entry.PlatformBrecht;
+        return "Streaming";
+    }
+
+    private RenderFragment GetPlatformMarkup(GameEntry entry) => builder =>
+    {
+        var seq = 0;
+        if (!string.IsNullOrEmpty(entry.PlatformBrecht))
+        {
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "platform-you");
+            builder.AddContent(seq++, $"Brecht: {entry.PlatformBrecht}");
+            builder.CloseElement();
+        }
+        if (!string.IsNullOrEmpty(entry.PlatformPieter))
+        {
+            if (!string.IsNullOrEmpty(entry.PlatformBrecht))
+            {
+                builder.OpenElement(seq++, "br");
+                builder.CloseElement();
+            }
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "platform-friend");
+            builder.AddContent(seq++, $"Pieter: {entry.PlatformPieter}");
+            builder.CloseElement();
+        }
+        if (entry.StatusLabel == "Skip" && entry.PlatformBrecht?.Contains("Steam") == true)
+        {
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "platform-dead");
+            builder.AddContent(seq++, $"Brecht: {entry.PlatformBrecht}");
+            builder.CloseElement();
+        }
+        if (string.IsNullOrEmpty(entry.PlatformBrecht) && string.IsNullOrEmpty(entry.PlatformPieter))
+        {
+            if (entry.StatusLabel is "Recommended" or "Essential" && entry.Name.Contains("Buy", StringComparison.OrdinalIgnoreCase) is false)
+            {
+                builder.OpenElement(seq++, "span");
+                builder.AddAttribute(seq++, "class", "platform-buy");
+                builder.AddContent(seq++, "Buy needed");
+                builder.CloseElement();
+            }
+            else
+            {
+                builder.AddContent(seq++, "—");
+            }
+        }
+        if (entry.IsCouchCoop)
+        {
+            builder.OpenElement(seq++, "br");
+            builder.CloseElement();
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "couch-tag");
+            builder.AddContent(seq++, "🎮 COUCH CO-OP");
+            builder.CloseElement();
+        }
+    };
+}

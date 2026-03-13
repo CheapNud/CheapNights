@@ -1,0 +1,68 @@
+@implements IDisposable
+@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
+@inject NowPlayingService NowPlayingService
+@inject IDialogService DialogService
+
+<div class="now-playing-bar">
+    <div class="now-playing-dot"></div>
+    <span class="now-playing-text">Now Playing</span>
+    <span class="now-playing-game">@_gameName</span>
+    @if (!string.IsNullOrEmpty(_statusNote))
+    {
+        <span class="now-playing-note">— @_statusNote</span>
+    }
+    <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                   Size="Size.Small"
+                   Class="now-playing-settings"
+                   OnClick="OpenDialog" />
+</div>
+
+@code {
+    private string _gameName = "—";
+    private string _statusNote = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        NowPlayingService.OnChange += OnNowPlayingChanged;
+        await LoadNowPlaying();
+    }
+
+    private async void OnNowPlayingChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadNowPlaying();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadNowPlaying()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var np = await db.NowPlaying
+            .Include(n => n.GameEntry)
+            .FirstOrDefaultAsync(n => n.Id == 1);
+
+        if (np?.GameEntry is not null)
+        {
+            _gameName = np.GameEntry.Name;
+            _statusNote = np.StatusNote ?? "";
+        }
+        else
+        {
+            _gameName = "—";
+            _statusNote = "";
+        }
+    }
+
+    private async Task OpenDialog()
+    {
+        var dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        await DialogService.ShowAsync<NowPlayingDialog>("Now Playing", dialogOptions);
+    }
+
+    public void Dispose()
+    {
+        NowPlayingService.OnChange -= OnNowPlayingChanged;
+    }
+}

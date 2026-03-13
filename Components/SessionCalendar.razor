@@ -1,0 +1,157 @@
+@inject SessionService SessionService
+@inject IDialogService DialogService
+
+<div class="section-header" style="margin-bottom:40px; margin-top:24px;">
+    <div class="section-divider re"></div>
+    <MudText Typo="Typo.h2" Style="background: linear-gradient(90deg,#c0392b,#e8c9b8,#2a9d8f); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+        SESSION PLANNER
+    </MudText>
+    <div class="section-divider sh"></div>
+</div>
+
+<!-- Calendar nav -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="PrevMonth" Size="Size.Medium" />
+    <MudText Typo="Typo.h2">@_currentDate.ToString("MMMM yyyy").ToUpper()</MudText>
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" OnClick="NextMonth" Size="Size.Medium" />
+</div>
+
+<!-- Day labels -->
+<div class="cal-grid cal-labels">
+    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div>
+    <div style="color:#e5a00d">Sat</div><div style="color:#e5a00d">Sun</div>
+</div>
+
+<!-- Calendar days -->
+<div class="cal-grid">
+    @foreach (var cell in _calendarCells)
+    {
+        if (cell.Day == 0)
+        {
+            <div class="cal-day empty"></div>
+        }
+        else
+        {
+            var day = cell.Day;
+            var isToday = cell.IsToday;
+            var isWeekend = cell.IsWeekend;
+            <div class="cal-day @(isToday ? "today" : "") @(isWeekend ? "weekend" : "")"
+                 @onclick="@(() => OpenSessionModal(day))">
+                <div class="cal-day-num">@day</div>
+                @if (cell.Session is not null)
+                {
+                    var locClass = $"loc-{cell.Session.Location}";
+                    var gameName = cell.Session.GameEntry?.Name ?? cell.Session.CustomGame ?? "TBD";
+                    var timeStr = cell.Session.ScheduledAt.ToString("HH:mm");
+                    <span class="cal-session-dot @locClass">@timeStr @gameName</span>
+                }
+            </div>
+        }
+    }
+</div>
+
+<!-- Upcoming sessions -->
+@if (_upcoming.Count > 0)
+{
+    <div style="margin-top:32px;">
+        <div class="upcoming-title">Upcoming Sessions</div>
+        @foreach (var session in _upcoming)
+        {
+            var locClass = $"loc-{session.Location}";
+            var locLabel = session.Location == "brecht" ? "Brecht's" : session.Location == "pieter" ? "Pieter's" : "?";
+            <div class="upcoming-item" @onclick="@(() => OpenSessionModal(session.ScheduledAt.Day))">
+                <MudText Style="font-size:12px; color:var(--text-dim); min-width:90px;">
+                    @session.ScheduledAt.ToString("dd/MM/yyyy")
+                </MudText>
+                <MudText Style="font-size:13px; color:var(--text-mid); min-width:44px;">
+                    @session.ScheduledAt.ToString("HH:mm")
+                </MudText>
+                <MudText Style="flex:1; font-size:13px;">
+                    @(session.GameEntry?.Name ?? session.CustomGame ?? "TBD")
+                </MudText>
+                <span class="upcoming-loc @locClass">@locLabel</span>
+                @if (!string.IsNullOrEmpty(session.Notes))
+                {
+                    <MudText Style="font-size:11px; color:#555; font-style:italic;">@session.Notes</MudText>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private DateTime _currentDate = DateTime.Now;
+    private List<CalendarCell> _calendarCells = [];
+    private List<PlannedSession> _monthSessions = [];
+    private List<PlannedSession> _upcoming = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMonth();
+    }
+
+    private async Task LoadMonth()
+    {
+        _monthSessions = await SessionService.GetSessionsForMonthAsync(_currentDate.Year, _currentDate.Month);
+        _upcoming = await SessionService.GetUpcomingAsync(8);
+        BuildCalendar();
+    }
+
+    private void BuildCalendar()
+    {
+        _calendarCells = [];
+        var firstDay = new DateTime(_currentDate.Year, _currentDate.Month, 1);
+        var offset = ((int)firstDay.DayOfWeek + 6) % 7; // Monday = 0
+        var daysInMonth = DateTime.DaysInMonth(_currentDate.Year, _currentDate.Month);
+        var today = DateTime.Today;
+
+        for (var i = 0; i < offset; i++)
+            _calendarCells.Add(new CalendarCell());
+
+        for (var d = 1; d <= daysInMonth; d++)
+        {
+            var dow = (offset + d - 1) % 7;
+            var session = _monthSessions.FirstOrDefault(s => s.ScheduledAt.Day == d);
+            _calendarCells.Add(new CalendarCell
+            {
+                Day = d,
+                IsToday = d == today.Day && _currentDate.Month == today.Month && _currentDate.Year == today.Year,
+                IsWeekend = dow >= 5,
+                Session = session
+            });
+        }
+    }
+
+    private async Task PrevMonth()
+    {
+        _currentDate = _currentDate.AddMonths(-1);
+        await LoadMonth();
+    }
+
+    private async Task NextMonth()
+    {
+        _currentDate = _currentDate.AddMonths(1);
+        await LoadMonth();
+    }
+
+    private async Task OpenSessionModal(int day)
+    {
+        var selectedDate = new DateTime(_currentDate.Year, _currentDate.Month, day);
+        var parameters = new DialogParameters<SessionModal> { { x => x.SelectedDate, selectedDate } };
+        var dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<SessionModal>(
+            selectedDate.ToString("dd MMMM yyyy").ToUpper(), parameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is not null && !dialogResult.Canceled)
+            await LoadMonth();
+    }
+
+    private class CalendarCell
+    {
+        public int Day { get; set; }
+        public bool IsToday { get; set; }
+        public bool IsWeekend { get; set; }
+        public PlannedSession? Session { get; set; }
+    }
+}

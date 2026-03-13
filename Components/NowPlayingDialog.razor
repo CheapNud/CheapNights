@@ -1,0 +1,81 @@
+@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
+@inject NowPlayingService NowPlayingService
+
+<MudDialogContent>
+    <MudSelect T="int?" Label="Current Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined">
+        <MudSelectItem T="int?" Value="@((int?)null)">— None —</MudSelectItem>
+        @foreach (var game in _games)
+        {
+            <MudSelectItem T="int?" Value="@((int?)game.Id)">
+                @(game.IsMovie ? "🎬" : "🎮") @game.Name
+            </MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudTextField T="string" Label="Status Note" @bind-Value="_statusNote"
+                  Placeholder="almost finished, just started, on the boss..."
+                  Variant="Variant.Outlined" Class="mt-3" />
+</MudDialogContent>
+
+<MudDialogActions>
+    <MudButton OnClick="Clear" Color="Color.Error" Variant="Variant.Text">Clear</MudButton>
+    <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+    <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Set Now Playing</MudButton>
+</MudDialogActions>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private List<GameEntry> _games = [];
+    private int? _selectedGameId;
+    private string _statusNote = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        _games = await db.GameEntries
+            .Where(g => g.StatusLabel != "Skip" && g.StatusLabel != "Upcoming")
+            .OrderBy(g => g.SortOrder)
+            .ToListAsync();
+
+        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == 1);
+        if (np is not null)
+        {
+            _selectedGameId = np.GameEntryId;
+            _statusNote = np.StatusNote ?? "";
+        }
+    }
+
+    private async Task Save()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == 1);
+        if (np is not null)
+        {
+            np.GameEntryId = _selectedGameId;
+            np.StatusNote = _statusNote;
+            np.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
+        NowPlayingService.NotifyChanged();
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private async Task Clear()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == 1);
+        if (np is not null)
+        {
+            np.GameEntryId = null;
+            np.StatusNote = null;
+            np.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
+        NowPlayingService.NotifyChanged();
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

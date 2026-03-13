@@ -1,0 +1,32 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_horrorTheme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<div class="horror-app">
+    @Body
+</div>
+
+@code {
+    private readonly MudTheme _horrorTheme = new()
+    {
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#c0392b",
+            Secondary = "#2a9d8f",
+            Background = "#080808",
+            Surface = "#0f0f0f",
+            AppbarBackground = "#080808",
+            TextPrimary = "#e0e0e0",
+            TextSecondary = "#666666",
+            DrawerBackground = "#0f0f0f",
+            DrawerText = "#e0e0e0",
+            ActionDefault = "#e0e0e0",
+            ActionDisabled = "#444444",
+            Dark = "#1e1e1e",
+            DarkContrastText = "#e0e0e0",
+        }
+    };
+}
