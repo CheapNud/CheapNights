@@ -1,27 +1,28 @@
 @inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
 @inject NowPlayingService NowPlayingService
 
-<MudDialogContent>
-    <MudSelect T="int?" Label="Current Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined">
-        <MudSelectItem T="int?" Value="@((int?)null)">— None —</MudSelectItem>
-        @foreach (var game in _games)
-        {
-            <MudSelectItem T="int?" Value="@((int?)game.Id)">
-                @(game.IsMovie ? "🎬" : "🎮") @game.Name
-            </MudSelectItem>
-        }
-    </MudSelect>
+<MudDialog>
+    <DialogContent>
+        <MudSelect T="int?" Label="Current Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined">
+            <MudSelectItem T="int?" Value="@((int?)null)">— None —</MudSelectItem>
+            @foreach (var game in _games)
+            {
+                <MudSelectItem T="int?" Value="@((int?)game.Id)">
+                    @(game.IsMovie ? "🎬" : "🎮") @game.Name
+                </MudSelectItem>
+            }
+        </MudSelect>
 
-    <MudTextField T="string" Label="Status Note" @bind-Value="_statusNote"
-                  Placeholder="almost finished, just started, on the boss..."
-                  Variant="Variant.Outlined" Class="mt-3" />
-</MudDialogContent>
-
-<MudDialogActions>
-    <MudButton OnClick="Clear" Color="Color.Error" Variant="Variant.Text">Clear</MudButton>
-    <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
-    <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Set Now Playing</MudButton>
-</MudDialogActions>
+        <MudTextField T="string" Label="Status Note" @bind-Value="_statusNote"
+                      Placeholder="almost finished, just started, on the boss..."
+                      Variant="Variant.Outlined" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Clear" Color="Color.Error" Variant="Variant.Text">Clear</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Set Now Playing</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     [CascadingParameter]

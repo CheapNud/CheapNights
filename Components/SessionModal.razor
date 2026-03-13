@@ -1,38 +1,39 @@
 @inject SessionService SessionService
 @inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
 
-<MudDialogContent>
-    <MudTimePicker Label="Time" @bind-Time="_selectedTime" Variant="Variant.Outlined" />
+<MudDialog>
+    <DialogContent>
+        <MudTimePicker Label="Time" @bind-Time="_selectedTime" Variant="Variant.Outlined" />
 
-    <MudSelect T="int?" Label="Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined" Class="mt-3">
-        <MudSelectItem T="int?" Value="@((int?)null)">🍕 Game Night (TBD)</MudSelectItem>
-        @foreach (var game in _games)
+        <MudSelect T="int?" Label="Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined" Class="mt-3">
+            <MudSelectItem T="int?" Value="@((int?)null)">🍕 Game Night (TBD)</MudSelectItem>
+            @foreach (var game in _games)
+            {
+                <MudSelectItem T="int?" Value="@((int?)game.Id)">
+                    @(game.IsMovie ? "🎬" : "🎮") @game.Name
+                </MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
+        <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
+            <MudToggleItem T="string" Value="@("brecht")">🏠 Brecht's place</MudToggleItem>
+            <MudToggleItem T="string" Value="@("pieter")">🏠 Pieter's place</MudToggleItem>
+        </MudToggleGroup>
+
+        <MudTextField T="string" Label="Notes" @bind-Value="_notes" Lines="3"
+                      Placeholder="Pizza ordered, bring snacks, start early..."
+                      Variant="Variant.Outlined" />
+    </DialogContent>
+    <DialogActions>
+        @if (_existingSession is not null)
         {
-            <MudSelectItem T="int?" Value="@((int?)game.Id)">
-                @(game.IsMovie ? "🎬" : "🎮") @game.Name
-            </MudSelectItem>
+            <MudButton OnClick="Delete" Color="Color.Error" Variant="Variant.Text">Delete</MudButton>
         }
-    </MudSelect>
-
-    <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
-    <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
-        <MudToggleItem T="string" Value="@("brecht")">🏠 Brecht's place</MudToggleItem>
-        <MudToggleItem T="string" Value="@("pieter")">🏠 Pieter's place</MudToggleItem>
-    </MudToggleGroup>
-
-    <MudTextField T="string" Label="Notes" @bind-Value="_notes" Lines="3"
-                  Placeholder="Pizza ordered, bring snacks, start early..."
-                  Variant="Variant.Outlined" />
-</MudDialogContent>
-
-<MudDialogActions>
-    @if (_existingSession is not null)
-    {
-        <MudButton OnClick="Delete" Color="Color.Error" Variant="Variant.Text">Delete</MudButton>
-    }
-    <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
-    <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Save Session</MudButton>
-</MudDialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Save Session</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     [CascadingParameter]

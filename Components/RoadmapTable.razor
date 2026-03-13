@@ -1,13 +1,13 @@
 @inject RoadmapService RoadmapService
 
-<div class="section">
-    <div class="section-header">
+<div class="mb-16">
+    <div class="d-flex align-center gap-4 mb-6">
         <span class="section-badge @Category.ToLower()">@PublisherLabel</span>
-        <MudText Typo="Typo.h2" Class="@($"section-title-{Category.ToLower()}")">@Title</MudText>
-        <div class="section-divider @Category.ToLower()"></div>
+        <MudText Typo="Typo.h4" Class="@($"section-title-{Category.ToLower()}")">@Title</MudText>
+        <div class="section-divider @Category.ToLower() flex-1"></div>
     </div>
 
-    <MudTable Items="_entries" Hover="true" Dense="true" Elevation="0" Breakpoint="Breakpoint.None">
+    <MudTable Items="_entries" Hover="true" Elevation="0" Breakpoint="Breakpoint.None">
         <HeaderContent>
             <MudTh Style="width:48px; text-align:center">#</MudTh>
             <MudTh>Game</MudTh>
@@ -18,7 +18,7 @@
             <MudTh>Platform</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd Class="@GetRowClasses(context)" Style="text-align:center">
+            <MudTd Class="@GetFirstCellClasses(context)" Style="text-align:center">
                 @if (context.IsMovie)
                 {
                     <span class="movie-icon">🎬</span>
@@ -28,35 +28,42 @@
                     <span class="order-badge @GetOrderBadgeClass(context)">@(context.SortLabel ?? "—")</span>
                 }
             </MudTd>
-            <MudTd Class="@GetRowClasses(context)">
-                <span class="game-name">@context.Name</span>
-                @if (!string.IsNullOrEmpty(context.GameNote))
-                {
-                    <span class="game-note @GetNoteClass(context)">@context.GameNote</span>
-                }
+            <MudTd Class="@GetCellClasses(context)">
+                <div>
+                    <span class="game-name">@context.Name</span>
+                    @if (!string.IsNullOrEmpty(context.GameNote))
+                    {
+                        <div class="game-note @GetNoteClass(context)">@context.GameNote</div>
+                    }
+                </div>
             </MudTd>
-            <MudTd Class="@GetRowClasses(context)">
+            <MudTd Class="@GetCellClasses(context)">
                 <span class="protagonist">@context.Protagonist</span>
             </MudTd>
-            <MudTd Class="@GetRowClasses(context)">
+            <MudTd Class="@GetCellClasses(context)">
                 <span class="protagonist">@context.StoryEra</span>
             </MudTd>
-            <MudTd Class="@GetRowClasses(context)">
-                <span class="status-badge @GetStatusBadgeClass(context)">@GetStatusText(context)</span>
+            <MudTd Class="@GetCellClasses(context)">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Label="true"
+                         Style="@GetStatusChipStyle(context)">
+                    @GetStatusText(context)
+                </MudChip>
             </MudTd>
-            <MudTd Class="@($"length-col {GetRowClasses(context)}")">
-                @if (context.StarRating > 0)
-                {
-                    <span>
-                        <span class="star-filled">@(new string('★', context.StarRating))</span><span class="star-empty">@(new string('★', 3 - context.StarRating))</span>
-                    </span>
-                }
-                @if (!string.IsNullOrEmpty(context.LengthLabel))
-                {
-                    <span class="length-label">@context.LengthLabel</span>
-                }
+            <MudTd Class="@($"length-col {GetCellClasses(context)}")">
+                <div>
+                    @if (context.StarRating > 0)
+                    {
+                        <div>
+                            <span class="star-filled">@(new string('★', context.StarRating))</span><span class="star-empty">@(new string('★', 3 - context.StarRating))</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(context.LengthLabel))
+                    {
+                        <div class="length-label">@context.LengthLabel</div>
+                    }
+                </div>
             </MudTd>
-            <MudTd Class="@GetRowClasses(context)">
+            <MudTd Class="@GetCellClasses(context)">
                 @if (context.IsMovie)
                 {
                     <span style="color:#555">@GetPlatformDisplay(context)</span>
@@ -82,7 +89,7 @@
         _entries = await RoadmapService.GetByCategoryAsync(Category);
     }
 
-    private string GetRowClasses(GameEntry entry)
+    private string GetFirstCellClasses(GameEntry entry)
     {
         var classes = new List<string>();
 
@@ -113,6 +120,18 @@
         return string.Join(" ", classes);
     }
 
+    private string GetCellClasses(GameEntry entry)
+    {
+        if (entry.IsMovie) return "movie-row";
+
+        var classes = new List<string> { "game-row" };
+        if (entry.StatusLabel == "Done" || entry.IsCompleted) classes.Add("row-done");
+        if (entry.StatusLabel == "Downloading") classes.Add("row-tonight");
+        if (entry.StatusLabel == "Skip") classes.Add("row-skip");
+
+        return string.Join(" ", classes);
+    }
+
     private string GetOrderBadgeClass(GameEntry entry) => entry.StatusLabel switch
     {
         "Downloading" => "active-now",
@@ -122,17 +141,18 @@
         _ => ""
     };
 
-    private string GetStatusBadgeClass(GameEntry entry) => entry.StatusLabel switch
+    private string GetStatusChipStyle(GameEntry entry) => entry.StatusLabel switch
     {
-        "Done" => "done",
-        "Essential" => Category == "SH" ? "essential-sh" : "essential-re",
-        "Downloading" => "downloading",
-        "Skip" => "skip",
-        "Upcoming" => "upcoming",
-        "Recommended" => "recommended",
-        "Canon" => "movie-canon",
-        "Plex" => "movie-plex",
-        "Optional" => "movie-optional",
+        "Done" => "border-color:rgba(244,162,97,0.4); color:#f4a261; background:rgba(244,162,97,0.1);",
+        "Essential" when Category == "SH" => "border-color:rgba(42,157,143,0.4); color:#4cc8be; background:rgba(42,157,143,0.1);",
+        "Essential" => "border-color:rgba(192,57,43,0.4); color:#e05a4a; background:rgba(192,57,43,0.1);",
+        "Downloading" => "border-color:rgba(58,134,255,0.5); color:#3a86ff; background:rgba(58,134,255,0.1); animation:blink 1.4s ease-in-out infinite;",
+        "Skip" => "border-color:#444; color:#444;",
+        "Upcoming" => "border-color:rgba(124,92,191,0.4); color:#a98be8; background:rgba(124,92,191,0.1);",
+        "Recommended" => "border-color:rgba(150,150,150,0.25); color:#888; background:rgba(150,150,150,0.08);",
+        "Canon" => "border-color:rgba(184,151,106,0.28); color:#b8976a; background:rgba(184,151,106,0.07);",
+        "Plex" => "border-color:rgba(229,160,13,0.35); color:#e5a00d; background:rgba(229,160,13,0.1);",
+        "Optional" => "border-color:rgba(110,110,110,0.25); color:#666; background:rgba(110,110,110,0.07);",
         _ => ""
     };
 

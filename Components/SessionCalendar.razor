@@ -1,18 +1,12 @@
 @inject SessionService SessionService
 @inject IDialogService DialogService
 
-<div class="section-header" style="margin-bottom:40px; margin-top:24px;">
-    <div class="section-divider re"></div>
-    <MudText Typo="Typo.h2" Style="background: linear-gradient(90deg,#c0392b,#e8c9b8,#2a9d8f); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
-        SESSION PLANNER
-    </MudText>
-    <div class="section-divider sh"></div>
-</div>
+<MudText Typo="Typo.h5" Class="gradient-title mb-6 mt-6">SESSION PLANNER</MudText>
 
 <!-- Calendar nav -->
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+<div class="d-flex align-center justify-space-between mb-5">
     <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="PrevMonth" Size="Size.Medium" />
-    <MudText Typo="Typo.h2">@_currentDate.ToString("MMMM yyyy").ToUpper()</MudText>
+    <MudText Typo="Typo.h6">@_currentDate.ToString("MMMM yyyy").ToUpper()</MudText>
     <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" OnClick="NextMonth" Size="Size.Medium" />
 </div>
 
@@ -23,7 +17,7 @@
 </div>
 
 <!-- Calendar days -->
-<div class="cal-grid">
+<div class="cal-grid mb-12">
     @foreach (var cell in _calendarCells)
     {
         if (cell.Day == 0)
@@ -53,26 +47,26 @@
 <!-- Upcoming sessions -->
 @if (_upcoming.Count > 0)
 {
-    <div style="margin-top:32px;">
-        <div class="upcoming-title">Upcoming Sessions</div>
+    <div class="mt-8">
+        <MudText Typo="Typo.overline" Class="mb-4" Style="letter-spacing:3px;">Upcoming Sessions</MudText>
         @foreach (var session in _upcoming)
         {
             var locClass = $"loc-{session.Location}";
             var locLabel = session.Location == "brecht" ? "Brecht's" : session.Location == "pieter" ? "Pieter's" : "?";
-            <div class="upcoming-item" @onclick="@(() => OpenSessionModal(session.ScheduledAt.Day))">
-                <MudText Style="font-size:12px; color:var(--text-dim); min-width:90px;">
+            <div class="upcoming-item cursor-pointer" @onclick="@(() => OpenSessionModal(session.ScheduledAt.Day))">
+                <MudText Typo="Typo.caption" Class="mud-text-secondary" Style="min-width:90px;">
                     @session.ScheduledAt.ToString("dd/MM/yyyy")
                 </MudText>
-                <MudText Style="font-size:13px; color:var(--text-mid); min-width:44px;">
+                <MudText Typo="Typo.caption" Style="min-width:44px;">
                     @session.ScheduledAt.ToString("HH:mm")
                 </MudText>
-                <MudText Style="flex:1; font-size:13px;">
+                <MudText Typo="Typo.body2" Class="flex-1">
                     @(session.GameEntry?.Name ?? session.CustomGame ?? "TBD")
                 </MudText>
                 <span class="upcoming-loc @locClass">@locLabel</span>
                 @if (!string.IsNullOrEmpty(session.Notes))
                 {
-                    <MudText Style="font-size:11px; color:#555; font-style:italic;">@session.Notes</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-disabled" Style="font-style:italic;">@session.Notes</MudText>
                 }
             </div>
         }

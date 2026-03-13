@@ -3,17 +3,18 @@
 @inject NowPlayingService NowPlayingService
 @inject IDialogService DialogService
 
-<div class="now-playing-bar">
-    <div class="now-playing-dot"></div>
-    <span class="now-playing-text">Now Playing</span>
-    <span class="now-playing-game">@_gameName</span>
+<div class="now-playing-bar d-flex align-center gap-4 rounded-sm pa-4 mb-12">
+    <div class="now-playing-dot flex-shrink-0 rounded-circle"></div>
+    <MudText Typo="Typo.overline" Class="now-playing-text">Now Playing</MudText>
+    <span class="now-playing-game ml-auto">@_gameName</span>
     @if (!string.IsNullOrEmpty(_statusNote))
     {
-        <span class="now-playing-note">— @_statusNote</span>
+        <span class="now-playing-note ml-2">— @_statusNote</span>
     }
     <MudIconButton Icon="@Icons.Material.Filled.Settings"
                    Size="Size.Small"
-                   Class="now-playing-settings"
+                   Class="ml-auto"
+                   Style="color:#1e3a5a;"
                    OnClick="OpenDialog" />
 </div>
 
