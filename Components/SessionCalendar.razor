@@ -140,12 +140,4 @@
         if (dialogResult is not null && !dialogResult.Canceled)
             await LoadMonth();
     }
-
-    private class CalendarCell
-    {
-        public int Day { get; set; }
-        public bool IsToday { get; set; }
-        public bool IsWeekend { get; set; }
-        public PlannedSession? Session { get; set; }
-    }
 }
