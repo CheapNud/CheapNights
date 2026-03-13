@@ -1,4 +1,5 @@
 @inject RoadmapService RoadmapService
+@inject IDialogService DialogService
 
 <div class="mb-16">
     <div class="d-flex align-center gap-4 mb-6">
@@ -7,7 +8,8 @@
         <div class="section-divider @Category.ToLower() flex-1"></div>
     </div>
 
-    <MudTable Items="_entries" Hover="true" Elevation="0" Breakpoint="Breakpoint.None">
+    <MudTable Items="_entries" Hover="true" Elevation="0" Breakpoint="Breakpoint.None"
+              OnRowClick="OnRowClicked" T="GameEntry" Class="cursor-pointer">
         <HeaderContent>
             <MudTh Style="width:48px; text-align:center">#</MudTh>
             <MudTh>Game</MudTh>
@@ -87,6 +89,23 @@
     protected override async Task OnInitializedAsync()
     {
         _entries = await RoadmapService.GetByCategoryAsync(Category);
+    }
+
+    private async Task OnRowClicked(TableRowClickEventArgs<GameEntry> args)
+    {
+        var entry = args.Item;
+        if (entry is null) return;
+
+        var parameters = new DialogParameters<GameEntryEditDialog> { { x => x.Entry, entry } };
+        var dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<GameEntryEditDialog>(entry.Name, parameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is not null && !dialogResult.Canceled)
+        {
+            _entries = await RoadmapService.GetByCategoryAsync(Category);
+            StateHasChanged();
+        }
     }
 
     private string GetFirstCellClasses(GameEntry entry)

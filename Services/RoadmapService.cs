@@ -42,4 +42,32 @@ public class RoadmapService(IDbContextFactory<HorrorDbContext> factory)
         entry.CompletedNote = null;
         await db.SaveChangesAsync();
     }
+
+    public async Task SaveEntryAsync(GameEntry updated)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        var entry = await db.GameEntries.FindAsync(updated.Id);
+        if (entry is null) return;
+
+        entry.Name = updated.Name;
+        entry.Category = updated.Category;
+        entry.EntryType = updated.EntryType;
+        entry.IsMovie = updated.IsMovie;
+        entry.StatusLabel = updated.StatusLabel;
+        entry.GameNote = updated.GameNote;
+        entry.Protagonist = updated.Protagonist;
+        entry.StoryEra = updated.StoryEra;
+        entry.StarRating = updated.StarRating;
+        entry.LengthLabel = updated.LengthLabel;
+        entry.PlatformBrecht = updated.PlatformBrecht;
+        entry.PlatformPieter = updated.PlatformPieter;
+        entry.IsCouchCoop = updated.IsCouchCoop;
+        entry.SortLabel = updated.SortLabel;
+        entry.SortOrder = updated.SortOrder;
+        entry.IsCompleted = updated.IsCompleted;
+        entry.CompletedAt = updated.CompletedAt;
+        entry.CompletedNote = updated.CompletedNote;
+
+        await db.SaveChangesAsync();
+    }
 }

@@ -1,0 +1,143 @@
+@inject RoadmapService RoadmapService
+
+<MudDialog>
+    <TitleContent>
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" />
+            <MudText Typo="Typo.h6">@Entry.Name</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="3">
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Name" @bind-Value="Entry.Name" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudSelect T="string" Label="Category" @bind-Value="Entry.Category" Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@("RE")">Resident Evil</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("SH")">Silent Hill</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudSelect T="string" Label="Type" @bind-Value="Entry.EntryType" Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@("Game")">Game</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Movie")">Movie</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("DLC")">DLC</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="string" Label="Status" @bind-Value="Entry.StatusLabel" Variant="Variant.Outlined">
+                    @foreach (var status in _statusOptions)
+                    {
+                        <MudSelectItem T="string" Value="@status">@status</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField T="string" Label="Game Note" @bind-Value="Entry.GameNote"
+                              Variant="Variant.Outlined" Lines="2"
+                              Placeholder="Arc reached, downloading, play after RE7..." />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Protagonist" @bind-Value="Entry.Protagonist" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Story Era" @bind-Value="Entry.StoryEra" Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="6" sm="3">
+                <MudSelect T="int" Label="Stars" @bind-Value="Entry.StarRating" Variant="Variant.Outlined">
+                    <MudSelectItem T="int" Value="0">—</MudSelectItem>
+                    <MudSelectItem T="int" Value="1">★</MudSelectItem>
+                    <MudSelectItem T="int" Value="2">★★</MudSelectItem>
+                    <MudSelectItem T="int" Value="3">★★★</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudTextField T="string" Label="Length" @bind-Value="Entry.LengthLabel"
+                              Variant="Variant.Outlined" Placeholder="~12h" />
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudTextField T="string" Label="Sort Label" @bind-Value="Entry.SortLabel"
+                              Variant="Variant.Outlined" Placeholder="1, 2, 3b..." />
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudNumericField T="int" Label="Sort Order" @bind-Value="Entry.SortOrder" Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Platform (Brecht)" @bind-Value="Entry.PlatformBrecht"
+                              Variant="Variant.Outlined" Placeholder="Steam, PS5..." />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Platform (Pieter)" @bind-Value="Entry.PlatformPieter"
+                              Variant="Variant.Outlined" Placeholder="PS5, Steam..." />
+            </MudItem>
+
+            <MudItem xs="4">
+                <MudSwitch T="bool" @bind-Value="Entry.IsMovie" Label="Movie/Film" Color="Color.Info" />
+            </MudItem>
+            <MudItem xs="4">
+                <MudSwitch T="bool" @bind-Value="Entry.IsCouchCoop" Label="Couch Co-op" Color="Color.Warning" />
+            </MudItem>
+            <MudItem xs="4">
+                <MudSwitch T="bool" @bind-Value="Entry.IsCompleted" Label="Completed" Color="Color.Success" />
+            </MudItem>
+
+            @if (Entry.IsCompleted)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Completed Date" @bind-Date="_completedDate" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" Label="Completed Note" @bind-Value="Entry.CompletedNote"
+                                  Variant="Variant.Outlined" Placeholder="Great co-op run..." />
+                </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public GameEntry Entry { get; set; } = default!;
+
+    private DateTime? _completedDate;
+
+    private readonly string[] _statusOptions =
+    [
+        "Essential", "Recommended", "Done", "Downloading", "Skip", "Upcoming",
+        "Canon", "Plex", "Optional"
+    ];
+
+    protected override void OnParametersSet()
+    {
+        _completedDate = Entry.CompletedAt;
+    }
+
+    private async Task Save()
+    {
+        if (Entry.IsCompleted)
+        {
+            Entry.CompletedAt = _completedDate ?? DateTime.UtcNow;
+        }
+        else
+        {
+            Entry.CompletedAt = null;
+            Entry.CompletedNote = null;
+        }
+
+        await RoadmapService.SaveEntryAsync(Entry);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
