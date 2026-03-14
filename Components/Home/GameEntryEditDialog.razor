@@ -37,17 +37,9 @@
             </MudItem>
 
             <MudItem xs="12">
-                <div class="d-flex flex-wrap gap-2 mb-2">
-                    @foreach (var pill in GameConstants.ProgressNotes.All)
-                    {
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
-                                 Style="cursor:pointer; border-color:#333; color:#888;"
-                                 OnClick="@(() => ApplyProgressNote(pill))">@pill</MudChip>
-                    }
-                </div>
                 <MudTextField T="string" Label="Game Note" @bind-Value="Entry.GameNote"
                               Variant="Variant.Outlined" Lines="2"
-                              Placeholder="Arc reached, downloading, play after RE7..." />
+                              Placeholder="Ethan searches for Mia — first-person horror, soft reboot..." />
             </MudItem>
 
             <MudItem xs="12" sm="6">
@@ -189,11 +181,6 @@
 
         await RoadmapService.SaveEntryAsync(Entry);
         MudDialog.Close(DialogResult.Ok(true));
-    }
-
-    private void ApplyProgressNote(string note)
-    {
-        Entry.GameNote = string.IsNullOrEmpty(Entry.GameNote) ? note : $"{Entry.GameNote} — {note}";
     }
 
     private void Cancel() => MudDialog.Cancel();

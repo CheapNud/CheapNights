@@ -15,9 +15,17 @@
                       Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
                       DisplayPropFallback="— None —" />
 
+            <div class="d-flex flex-wrap gap-2 mt-3 mb-2">
+                @foreach (var pill in GameConstants.ProgressNotes.All)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                             Style="cursor:pointer; border-color:#333; color:#888;"
+                             OnClick="@(() => ApplyProgressNote(pill))">@pill</MudChip>
+                }
+            </div>
             <MudTextField T="string" Label="Status Note" @bind-Value="_statusNote"
                           Placeholder="almost finished, just started, on the boss..."
-                          Variant="Variant.Outlined" Class="mt-3" />
+                          Variant="Variant.Outlined" />
         }
     </DialogContent>
     <DialogActions>
@@ -66,6 +74,11 @@
         await NowPlayingRepo.ClearAsync();
         await NowPlayingService.NotifyChangedAsync();
         MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void ApplyProgressNote(string note)
+    {
+        _statusNote = note;
     }
 
     private void Cancel() => MudDialog.Cancel();
