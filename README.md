@@ -3,9 +3,6 @@
 Co-op horror game night planner — track franchise roadmaps, plan sessions, and coordinate playthroughs with friends.
 
 ![Header & Session Planner](docs/screenshots/header.png)
-![Resident Evil Roadmap](docs/screenshots/roadmap-re.png)
-![Silent Hill Roadmap](docs/screenshots/roadmap-sh.png)
-
 ## Features
 
 - **Franchise Roadmaps** — Resident Evil and Silent Hill with game/movie/DLC entries, status tracking, star ratings, and platform ownership
