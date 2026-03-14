@@ -1,6 +1,8 @@
+using CheapHelpers.Models.Contracts;
+
 namespace CheapNights.Models;
 
-public class NowPlaying
+public class NowPlaying : IEntityId
 {
     public int Id { get; set; }
     public int? GameEntryId { get; set; }

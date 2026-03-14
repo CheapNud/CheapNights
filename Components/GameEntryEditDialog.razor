@@ -1,4 +1,6 @@
 @inject RoadmapService RoadmapService
+@inject StatusRepo StatusRepo
+@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
 
 <MudDialog>
     <TitleContent>
@@ -13,23 +15,26 @@
                 <MudTextField T="string" Label="Name" @bind-Value="Entry.Name" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="6" sm="3">
-                <MudSelect T="string" Label="Category" @bind-Value="Entry.Category" Variant="Variant.Outlined">
-                    <MudSelectItem T="string" Value="@(GameConstants.Categories.ResidentEvil)">Resident Evil</MudSelectItem>
-                    <MudSelectItem T="string" Value="@(GameConstants.Categories.SilentHill)">Silent Hill</MudSelectItem>
+                <MudSelect T="int" Label="Category" @bind-Value="Entry.CategoryId" Variant="Variant.Outlined">
+                    @foreach (var cat in _categories)
+                    {
+                        <MudSelectItem T="int" Value="@cat.Id">@cat.Name</MudSelectItem>
+                    }
                 </MudSelect>
             </MudItem>
             <MudItem xs="6" sm="3">
-                <MudSelect T="string" Label="Type" @bind-Value="Entry.EntryType" Variant="Variant.Outlined">
-                    <MudSelectItem T="string" Value="@(GameConstants.EntryTypes.Game)">Game</MudSelectItem>
-                    <MudSelectItem T="string" Value="@(GameConstants.EntryTypes.Movie)">Movie</MudSelectItem>
-                    <MudSelectItem T="string" Value="@(GameConstants.EntryTypes.DLC)">DLC</MudSelectItem>
+                <MudSelect T="int" Label="Type" @bind-Value="Entry.EntryTypeId" Variant="Variant.Outlined">
+                    @foreach (var et in _entryTypes)
+                    {
+                        <MudSelectItem T="int" Value="@et.Id">@et.Name</MudSelectItem>
+                    }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect T="string" Label="Status" @bind-Value="Entry.StatusLabel" Variant="Variant.Outlined">
-                    @foreach (var status in _statusOptions)
+                <MudSelect T="int?" Label="Status" @bind-Value="Entry.StatusId" Variant="Variant.Outlined">
+                    @foreach (var status in _statuses)
                     {
-                        <MudSelectItem T="string" Value="@status">@status</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)status.Id)">@status.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -76,20 +81,20 @@
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <MudSelect T="string" Label="Platform (Brecht)" @bind-Value="Entry.PlatformBrecht"
+                <MudSelect T="int?" Label="Platform (Brecht)" @bind-Value="Entry.PlatformBrechtId"
                            Variant="Variant.Outlined" Clearable="true">
-                    @foreach (var platform in GameConstants.Platforms.All)
+                    @foreach (var platform in _platforms)
                     {
-                        <MudSelectItem T="string" Value="@platform">@platform</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)platform.Id)">@platform.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect T="string" Label="Platform (Pieter)" @bind-Value="Entry.PlatformPieter"
+                <MudSelect T="int?" Label="Platform (Pieter)" @bind-Value="Entry.PlatformPieterId"
                            Variant="Variant.Outlined" Clearable="true">
-                    @foreach (var platform in GameConstants.Platforms.All)
+                    @foreach (var platform in _platforms)
                     {
-                        <MudSelectItem T="string" Value="@platform">@platform</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)platform.Id)">@platform.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -129,11 +134,20 @@
     [Parameter] public GameEntry Entry { get; set; } = default!;
 
     private DateTime? _completedDate;
+    private List<Status> _statuses = [];
+    private List<Category> _categories = [];
+    private List<EntryType> _entryTypes = [];
+    private List<Platform> _platforms = [];
 
-    private readonly string[] _statusOptions = GameConstants.Status.All;
-
-    protected override void OnParametersSet()
+    protected override async Task OnInitializedAsync()
     {
+        _statuses = await StatusRepo.GetSelectableAsync();
+
+        await using var db = DbFactory.CreateDbContext();
+        _categories = await db.Categories.OrderBy(c => c.SortOrder).AsNoTracking().ToListAsync();
+        _entryTypes = await db.EntryTypes.OrderBy(e => e.SortOrder).AsNoTracking().ToListAsync();
+        _platforms = await db.Platforms.OrderBy(p => p.SortOrder).AsNoTracking().ToListAsync();
+
         _completedDate = Entry.CompletedAt;
     }
 

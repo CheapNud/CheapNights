@@ -2,48 +2,6 @@ namespace CheapNights.Constants;
 
 public static class GameConstants
 {
-    public static class Categories
-    {
-        public const string ResidentEvil = "RE";
-        public const string SilentHill = "SH";
-    }
-
-    public static class EntryTypes
-    {
-        public const string Game = "Game";
-        public const string Movie = "Movie";
-        public const string DLC = "DLC";
-    }
-
-    public static class Status
-    {
-        public const string Essential = "Essential";
-        public const string Recommended = "Recommended";
-        public const string Done = "Done";
-        public const string Downloading = "Downloading";
-        public const string Skip = "Skip";
-        public const string Upcoming = "Upcoming";
-        public const string Canon = "Canon";
-        public const string Plex = "Plex";
-        public const string Optional = "Optional";
-
-        public static readonly string[] All =
-        [
-            Essential, Recommended, Done, Downloading, Skip, Upcoming,
-            Canon, Plex, Optional
-        ];
-
-        public static readonly string[] ExcludedFromSelection = [Skip, Upcoming];
-    }
-
-    public static class Platforms
-    {
-        public const string Steam = "Steam";
-        public const string PS5 = "PS5";
-
-        public static readonly string[] All = [Steam, PS5];
-    }
-
     public static class Players
     {
         public const string Brecht = "Brecht";
