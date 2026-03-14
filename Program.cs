@@ -6,8 +6,14 @@ using CheapNights.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, cfg) => cfg
+    .ReadFrom.Configuration(ctx.Configuration)
+    .WriteTo.Console()
+    .Enrich.WithProperty("Application", "CheapNights"));
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(opt => opt.DetailedErrors = builder.Environment.IsDevelopment());
