@@ -1,6 +1,6 @@
 using CheapHelpers.EF.Repositories;
-using CheapNights.Constants;
 using CheapNights.Data;
+using CheapNights.Helpers;
 using CheapNights.Models;
 using Microsoft.EntityFrameworkCore;
 

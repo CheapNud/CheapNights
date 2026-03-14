@@ -1,6 +1,6 @@
 using CheapNights.Components;
 using CheapNights.Data;
-using CheapNights.Endpoints;
+using CheapNights.Helpers;
 using CheapNights.Repositories;
 using CheapNights.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -25,7 +25,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpClient();
-
 builder.Services.AddDbContextFactory<HorrorDbContext>(opt =>
 {
     if (builder.Environment.IsDevelopment())
@@ -47,7 +46,7 @@ builder.Services.AddScoped<StatusRepo>();
 builder.Services.AddScoped<RoadmapService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddSingleton<NowPlayingService>();
-builder.Services.AddScoped<PlexAuthService>();
+builder.Services.AddSingleton<PlexAuthService>();
 
 var app = builder.Build();
 

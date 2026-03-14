@@ -1,26 +1,37 @@
 using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using CheapHelpers.Caching;
+using CheapNights.DTOs;
 
 namespace CheapNights.Services;
 
-public class PlexAuthService
+public class PlexAuthService(IConfiguration configuration, IHttpClientFactory httpClientFactory) : IDisposable
 {
     private const string PlexApiBase = "https://plex.tv/api/v2";
     private const string PlexAuthUrl = "https://app.plex.tv/auth#";
 
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly string _clientId;
-    private readonly string _productName;
-    private readonly string _adminToken;
-
-    public PlexAuthService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
-    {
-        _httpClientFactory = httpClientFactory;
-        _clientId = configuration["Plex:ClientId"] ?? "CheapNights";
-        _productName = configuration["Plex:ProductName"] ?? "CheapNights";
-        _adminToken = configuration["Plex:AdminToken"]
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly string _clientId = configuration["Plex:ClientId"] ?? "CheapNights";
+    private readonly string _productName = configuration["Plex:ProductName"] ?? "CheapNights";
+    private readonly string _adminToken = configuration["Plex:AdminToken"]
             ?? throw new InvalidOperationException("Plex:AdminToken is not configured. Set it via user-secrets (dev) or environment variable (prod).");
+    private readonly AbsoluteExpirationCache<string> _tokenCache = new("PlexTokens", TimeSpan.FromDays(30));
+    private int? _cachedOwnerId;
+
+    /// <summary>
+    /// Stores a Plex auth token server-side, keyed by PlexUserId.
+    /// </summary>
+    public void StoreToken(int plexUserId, string authToken)
+    {
+        _tokenCache.Set($"{plexUserId}", authToken);
+    }
+
+    /// <summary>
+    /// Retrieves a stored Plex auth token for the given user.
+    /// </summary>
+    public string? GetStoredToken(int plexUserId)
+    {
+        return _tokenCache.TryGet($"{plexUserId}", out var token) ? token : null;
     }
 
     /// <summary>
@@ -73,21 +84,14 @@ public class PlexAuthService
     }
 
     /// <summary>
-    /// Checks if a Plex user has access to the admin's server by comparing shared user IDs.
-    /// The admin (server owner) always has access.
+    /// Checks if a Plex user has access to the admin's server.
+    /// The admin (server owner) always has access. Owner ID is cached after first lookup.
     /// </summary>
-    public async Task<bool> HasServerAccessAsync(string authToken, int plexUserId)
+    public async Task<bool> HasServerAccessAsync(int plexUserId)
     {
-        // Check if this user is the server owner
-        using var ownerClient = CreateClient(_adminToken);
-        var ownerResponse = await ownerClient.GetAsync($"{PlexApiBase}/user");
-        if (ownerResponse.IsSuccessStatusCode)
-        {
-            var owner = await ownerResponse.Content.ReadFromJsonAsync<PlexUserInfo>();
-            if (owner?.Id == plexUserId) return true;
-        }
+        var ownerId = await GetOwnerIdAsync();
+        if (ownerId == plexUserId) return true;
 
-        // Check shared users (friends) via the XML API
         using var client = _httpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Plex-Token", _adminToken);
 
@@ -101,6 +105,19 @@ public class PlexAuthService
         return doc.Descendants("User").Any(u => u.Attribute("id")?.Value == userIdStr);
     }
 
+    private async Task<int?> GetOwnerIdAsync()
+    {
+        if (_cachedOwnerId.HasValue) return _cachedOwnerId;
+
+        using var client = CreateClient(_adminToken);
+        var response = await client.GetAsync($"{PlexApiBase}/user");
+        if (!response.IsSuccessStatusCode) return null;
+
+        var owner = await response.Content.ReadFromJsonAsync<PlexUserInfo>();
+        _cachedOwnerId = owner?.Id;
+        return _cachedOwnerId;
+    }
+
     private HttpClient CreateClient(string? token = null)
     {
         var client = _httpClientFactory.CreateClient();
@@ -111,31 +128,10 @@ public class PlexAuthService
             client.DefaultRequestHeaders.Add("X-Plex-Token", token);
         return client;
     }
-}
 
-public class PlexPinResponse
-{
-    [JsonPropertyName("id")]
-    public int Id { get; set; }
-
-    [JsonPropertyName("code")]
-    public string Code { get; set; } = "";
-
-    [JsonPropertyName("authToken")]
-    public string? AuthToken { get; set; }
-}
-
-public class PlexUserInfo
-{
-    [JsonPropertyName("id")]
-    public int Id { get; set; }
-
-    [JsonPropertyName("username")]
-    public string Username { get; set; } = "";
-
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
-
-    [JsonPropertyName("thumb")]
-    public string? Thumb { get; set; }
+    public void Dispose()
+    {
+        _tokenCache.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }
