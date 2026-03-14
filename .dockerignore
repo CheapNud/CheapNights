@@ -1,0 +1,14 @@
+**/.git
+**/.github
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/*.md
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/docker-compose.yml
+**/nginx-horror.conf
+**/*.html
+LICENSE
