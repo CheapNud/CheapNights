@@ -35,6 +35,14 @@
             </MudItem>
 
             <MudItem xs="12">
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    @foreach (var pill in GameConstants.ProgressNotes.All)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                                 Style="cursor:pointer; border-color:#333; color:#888;"
+                                 OnClick="@(() => ApplyProgressNote(pill))">@pill</MudChip>
+                    }
+                </div>
                 <MudTextField T="string" Label="Game Note" @bind-Value="Entry.GameNote"
                               Variant="Variant.Outlined" Lines="2"
                               Placeholder="Arc reached, downloading, play after RE7..." />
@@ -57,7 +65,7 @@
             </MudItem>
             <MudItem xs="6" sm="3">
                 <MudTextField T="string" Label="Length" @bind-Value="Entry.LengthLabel"
-                              Variant="Variant.Outlined" Placeholder="~12h" />
+                              Variant="Variant.Outlined" Placeholder="12h" />
             </MudItem>
             <MudItem xs="6" sm="3">
                 <MudTextField T="string" Label="Sort Label" @bind-Value="Entry.SortLabel"
@@ -68,12 +76,22 @@
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <MudTextField T="string" Label="Platform (Brecht)" @bind-Value="Entry.PlatformBrecht"
-                              Variant="Variant.Outlined" Placeholder="Steam, PS5..." />
+                <MudSelect T="string" Label="Platform (Brecht)" @bind-Value="Entry.PlatformBrecht"
+                           Variant="Variant.Outlined" Clearable="true">
+                    @foreach (var platform in GameConstants.Platforms.All)
+                    {
+                        <MudSelectItem T="string" Value="@platform">@platform</MudSelectItem>
+                    }
+                </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField T="string" Label="Platform (Pieter)" @bind-Value="Entry.PlatformPieter"
-                              Variant="Variant.Outlined" Placeholder="PS5, Steam..." />
+                <MudSelect T="string" Label="Platform (Pieter)" @bind-Value="Entry.PlatformPieter"
+                           Variant="Variant.Outlined" Clearable="true">
+                    @foreach (var platform in GameConstants.Platforms.All)
+                    {
+                        <MudSelectItem T="string" Value="@platform">@platform</MudSelectItem>
+                    }
+                </MudSelect>
             </MudItem>
 
             <MudItem xs="4">
@@ -133,6 +151,11 @@
 
         await RoadmapService.SaveEntryAsync(Entry);
         MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void ApplyProgressNote(string note)
+    {
+        Entry.GameNote = string.IsNullOrEmpty(Entry.GameNote) ? note : $"{Entry.GameNote} — {note}";
     }
 
     private void Cancel() => MudDialog.Cancel();

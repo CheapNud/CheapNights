@@ -61,7 +61,7 @@
                     }
                     @if (!string.IsNullOrEmpty(context.LengthLabel))
                     {
-                        <div class="length-label">@context.LengthLabel</div>
+                        <div class="length-label">~@context.LengthLabel</div>
                     }
                 </div>
             </MudTd>
@@ -83,6 +83,8 @@
     [Parameter] public string Category { get; set; } = GameConstants.Categories.ResidentEvil;
     [Parameter] public string Title { get; set; } = "Resident Evil";
     [Parameter] public string PublisherLabel { get; set; } = "Capcom";
+
+    [Parameter] public int? NowPlayingGameId { get; set; }
 
     private List<GameEntry> _entries = [];
 
@@ -135,6 +137,8 @@
         if (entry.StatusLabel == GameConstants.Status.Done || entry.IsCompleted) classes.Add("row-done");
         if (entry.StatusLabel == GameConstants.Status.Downloading) classes.Add("row-tonight");
         if (entry.StatusLabel == GameConstants.Status.Skip) classes.Add("row-skip");
+        if (entry.Id == NowPlayingGameId) classes.Add("row-now-playing");
+        if (IsNextUp(entry)) classes.Add("row-next-up");
 
         return string.Join(" ", classes);
     }
@@ -147,18 +151,25 @@
         if (entry.StatusLabel == GameConstants.Status.Done || entry.IsCompleted) classes.Add("row-done");
         if (entry.StatusLabel == GameConstants.Status.Downloading) classes.Add("row-tonight");
         if (entry.StatusLabel == GameConstants.Status.Skip) classes.Add("row-skip");
+        if (entry.Id == NowPlayingGameId) classes.Add("row-now-playing");
+        if (IsNextUp(entry)) classes.Add("row-next-up");
 
         return string.Join(" ", classes);
     }
 
-    private string GetOrderBadgeClass(GameEntry entry) => entry.StatusLabel switch
+    private bool IsNextUp(GameEntry entry) =>
+        entry.StatusLabel is not GameConstants.Status.Downloading and not GameConstants.Status.Done
+        && ((entry.SortLabel == "2" && Category == GameConstants.Categories.ResidentEvil)
+         || (entry.SortLabel == "0" && Category == GameConstants.Categories.SilentHill));
+
+    private string GetOrderBadgeClass(GameEntry entry)
     {
-        GameConstants.Status.Downloading => "active-now",
-        GameConstants.Status.Done => "",
-        _ when entry.SortLabel == "2" && Category == GameConstants.Categories.ResidentEvil => "next-up",
-        _ when entry.SortLabel == "0" && Category == GameConstants.Categories.SilentHill => "next-up",
-        _ => ""
-    };
+        if (entry.Id == NowPlayingGameId) return "now-playing";
+        if (entry.StatusLabel == GameConstants.Status.Downloading) return "active-now";
+        if (entry.StatusLabel == GameConstants.Status.Done) return "";
+        if (IsNextUp(entry)) return "next-up";
+        return "";
+    }
 
     private string GetStatusChipStyle(GameEntry entry) => entry.StatusLabel switch
     {
