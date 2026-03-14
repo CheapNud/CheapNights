@@ -16,6 +16,7 @@ public class PlexAuthService(IConfiguration configuration, IHttpClientFactory ht
     private readonly string _adminToken = configuration["Plex:AdminToken"]
             ?? throw new InvalidOperationException("Plex:AdminToken is not configured. Set it via user-secrets (dev) or environment variable (prod).");
     private readonly AbsoluteExpirationCache<string> _tokenCache = new("PlexTokens", TimeSpan.FromDays(30));
+    private readonly SemaphoreSlim _ownerLock = new(1, 1);
     private int? _cachedOwnerId;
 
     /// <summary>
@@ -109,13 +110,23 @@ public class PlexAuthService(IConfiguration configuration, IHttpClientFactory ht
     {
         if (_cachedOwnerId.HasValue) return _cachedOwnerId;
 
-        using var client = CreateClient(_adminToken);
-        var response = await client.GetAsync($"{PlexApiBase}/user");
-        if (!response.IsSuccessStatusCode) return null;
+        await _ownerLock.WaitAsync();
+        try
+        {
+            if (_cachedOwnerId.HasValue) return _cachedOwnerId;
 
-        var owner = await response.Content.ReadFromJsonAsync<PlexUserInfo>();
-        _cachedOwnerId = owner?.Id;
-        return _cachedOwnerId;
+            using var client = CreateClient(_adminToken);
+            var response = await client.GetAsync($"{PlexApiBase}/user");
+            if (!response.IsSuccessStatusCode) return null;
+
+            var owner = await response.Content.ReadFromJsonAsync<PlexUserInfo>();
+            _cachedOwnerId = owner?.Id;
+            return _cachedOwnerId;
+        }
+        finally
+        {
+            _ownerLock.Release();
+        }
     }
 
     private HttpClient CreateClient(string? token = null)
@@ -132,6 +143,7 @@ public class PlexAuthService(IConfiguration configuration, IHttpClientFactory ht
     public void Dispose()
     {
         _tokenCache.Dispose();
+        _ownerLock.Dispose();
         GC.SuppressFinalize(this);
     }
 }

@@ -38,11 +38,11 @@ public static class AuthEndpoints
             context.Response.Cookies.Delete("PlexPinId");
 
             string? authToken = null;
-            for (var attempt = 0; attempt < 3; attempt++)
+            for (var attempt = 0; attempt < 5; attempt++)
             {
                 authToken = await plexAuth.CheckPinAsync(pinId);
                 if (authToken is not null) break;
-                await Task.Delay(500);
+                await Task.Delay(1000);
             }
 
             if (authToken is null)
