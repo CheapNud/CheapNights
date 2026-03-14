@@ -29,7 +29,7 @@ var app = builder.Build();
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<HorrorDbContext>>();
-    await using var db = await factory.CreateDbContextAsync();
+    await using var db = factory.CreateDbContext();
     await db.Database.EnsureCreatedAsync();
 }
 

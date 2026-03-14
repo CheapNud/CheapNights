@@ -6,7 +6,9 @@ public class NowPlayingService
 
     public async Task NotifyChangedAsync()
     {
-        if (OnChange is not null)
-            await OnChange.Invoke();
+        if (OnChange is null) return;
+
+        foreach (var handler in OnChange.GetInvocationList().Cast<Func<Task>>())
+            await handler();
     }
 }

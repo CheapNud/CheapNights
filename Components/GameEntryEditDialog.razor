@@ -143,7 +143,7 @@
     {
         _statuses = await StatusRepo.GetSelectableAsync();
 
-        await using var db = await DbFactory.CreateDbContextAsync();
+        await using var db = DbFactory.CreateDbContext();
         _categories = await db.Categories.OrderBy(c => c.SortOrder).AsNoTracking().ToListAsync();
         _entryTypes = await db.EntryTypes.OrderBy(e => e.SortOrder).AsNoTracking().ToListAsync();
         _platforms = await db.Platforms.OrderBy(p => p.SortOrder).AsNoTracking().ToListAsync();
