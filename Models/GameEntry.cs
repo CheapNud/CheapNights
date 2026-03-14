@@ -34,6 +34,6 @@ public class GameEntry : IEntityId
     public int SortOrder { get; set; }
     public bool IsCompleted { get; set; }
     public DateTime? CompletedAt { get; set; }
-    public string? CompletedNote { get; set; }
+    public string? CompletedTime { get; set; }
     public string? GameNote { get; set; }
 }
