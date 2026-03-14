@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -17,12 +18,12 @@ namespace CheapNights.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Code = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    BadgeColor = table.Column<string>(type: "TEXT", nullable: true),
-                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    BadgeColor = table.Column<string>(type: "text", nullable: true),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -33,10 +34,10 @@ namespace CheapNights.Migrations
                 name: "EntryTypes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -47,10 +48,10 @@ namespace CheapNights.Migrations
                 name: "Platforms",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -61,14 +62,14 @@ namespace CheapNights.Migrations
                 name: "Statuses",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ChipColor = table.Column<string>(type: "TEXT", nullable: true),
-                    ChipBackground = table.Column<string>(type: "TEXT", nullable: true),
-                    StripeColor = table.Column<string>(type: "TEXT", nullable: true),
-                    IsSelectable = table.Column<bool>(type: "INTEGER", nullable: false),
-                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ChipColor = table.Column<string>(type: "text", nullable: true),
+                    ChipBackground = table.Column<string>(type: "text", nullable: true),
+                    StripeColor = table.Column<string>(type: "text", nullable: true),
+                    IsSelectable = table.Column<bool>(type: "boolean", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,26 +80,26 @@ namespace CheapNights.Migrations
                 name: "GameEntries",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    CategoryId = table.Column<int>(type: "INTEGER", nullable: false),
-                    EntryTypeId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Protagonist = table.Column<string>(type: "TEXT", nullable: true),
-                    StoryEra = table.Column<string>(type: "TEXT", nullable: true),
-                    StatusId = table.Column<int>(type: "INTEGER", nullable: true),
-                    StarRating = table.Column<int>(type: "INTEGER", nullable: false),
-                    LengthLabel = table.Column<string>(type: "TEXT", nullable: true),
-                    PlatformBrechtId = table.Column<int>(type: "INTEGER", nullable: true),
-                    PlatformPieterId = table.Column<int>(type: "INTEGER", nullable: true),
-                    IsCouchCoop = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsMovie = table.Column<bool>(type: "INTEGER", nullable: false),
-                    SortLabel = table.Column<string>(type: "TEXT", nullable: true),
-                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CompletedTime = table.Column<string>(type: "TEXT", nullable: true),
-                    GameNote = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    EntryTypeId = table.Column<int>(type: "integer", nullable: false),
+                    Protagonist = table.Column<string>(type: "text", nullable: true),
+                    StoryEra = table.Column<string>(type: "text", nullable: true),
+                    StatusId = table.Column<int>(type: "integer", nullable: true),
+                    StarRating = table.Column<int>(type: "integer", nullable: false),
+                    LengthLabel = table.Column<string>(type: "text", nullable: true),
+                    PlatformBrechtId = table.Column<int>(type: "integer", nullable: true),
+                    PlatformPieterId = table.Column<int>(type: "integer", nullable: true),
+                    IsCouchCoop = table.Column<bool>(type: "boolean", nullable: false),
+                    IsMovie = table.Column<bool>(type: "boolean", nullable: false),
+                    SortLabel = table.Column<string>(type: "text", nullable: true),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CompletedTime = table.Column<string>(type: "text", nullable: true),
+                    GameNote = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -136,11 +137,11 @@ namespace CheapNights.Migrations
                 name: "NowPlaying",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    GameEntryId = table.Column<int>(type: "INTEGER", nullable: true),
-                    StatusNote = table.Column<string>(type: "TEXT", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    GameEntryId = table.Column<int>(type: "integer", nullable: true),
+                    StatusNote = table.Column<string>(type: "text", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,15 +157,15 @@ namespace CheapNights.Migrations
                 name: "PlannedSessions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    ScheduledAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Location = table.Column<string>(type: "TEXT", nullable: false),
-                    GameEntryId = table.Column<int>(type: "INTEGER", nullable: true),
-                    CustomGame = table.Column<string>(type: "TEXT", nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", nullable: true),
-                    UseCurrentGame = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ScheduledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Location = table.Column<string>(type: "text", nullable: false),
+                    GameEntryId = table.Column<int>(type: "integer", nullable: true),
+                    CustomGame = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    UseCurrentGame = table.Column<bool>(type: "boolean", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
