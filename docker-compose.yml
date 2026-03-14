@@ -6,6 +6,6 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:5000
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__Default=Host=localhost;Database=cheapnights;Username=cheapnights;Password=${PG_PASSWORD}
+      - ConnectionStrings__Default=Host=192.168.1.14;Port=5432;Database=cheapnights;Username=cheapnights;Password=${PG_PASSWORD}
     ports:
       - "5010:5000"
