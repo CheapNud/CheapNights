@@ -10,7 +10,7 @@ using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(opt => opt.DetailedErrors = builder.Environment.IsDevelopment());
 
 builder.Services.AddMudServices();
 

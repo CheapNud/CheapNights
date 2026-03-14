@@ -24,7 +24,7 @@ public class SessionRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRepo<
     public async Task<List<PlannedSession>> GetUpcomingAsync(int count)
     {
         using var db = _factory.CreateDbContext();
-        var now = DateTime.UtcNow.Date;
+        var now = DateTime.UtcNow.Date.ToUniversalTime();
 
         return await db.PlannedSessions
             .Include(s => s.GameEntry)
@@ -38,7 +38,7 @@ public class SessionRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRepo<
     public async Task<PlannedSession?> GetByDateAsync(DateTime date)
     {
         using var db = _factory.CreateDbContext();
-        var dayStart = date.Date;
+        var dayStart = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
         var dayEnd = dayStart.AddDays(1);
 
         return await db.PlannedSessions
