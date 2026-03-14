@@ -4,23 +4,30 @@
 
 <MudDialog>
     <DialogContent>
-        <MudTimePicker Label="Time" @bind-Time="_selectedTime" Variant="Variant.Outlined" />
+        @if (!_loaded)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudTimePicker Label="Time" @bind-Time="_selectedTime" Variant="Variant.Outlined" />
 
-        <Selector T="GameEntry" Items="_games" Label="Game / Film"
-                  DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
-                  Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
-                  DisplayPropFallback="@($"🍕 {GameConstants.Defaults.DefaultCustomGame}")"
-                  Class="mt-3" />
+            <Selector T="GameEntry" Items="_games" Label="Game / Film"
+                      DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
+                      Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
+                      DisplayPropFallback="@($"🍕 {GameConstants.Defaults.DefaultCustomGame}")"
+                      Class="mt-3" />
 
-        <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
-        <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
-            <MudToggleItem T="string" Value="@(GameConstants.Players.BrechtKey)">🏠 @(GameConstants.Players.Brecht)'s place</MudToggleItem>
-            <MudToggleItem T="string" Value="@(GameConstants.Players.PieterKey)">🏠 @(GameConstants.Players.Pieter)'s place</MudToggleItem>
-        </MudToggleGroup>
+            <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
+            <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
+                <MudToggleItem T="string" Value="@(GameConstants.Players.BrechtKey)">🏠 @(GameConstants.Players.Brecht)'s place</MudToggleItem>
+                <MudToggleItem T="string" Value="@(GameConstants.Players.PieterKey)">🏠 @(GameConstants.Players.Pieter)'s place</MudToggleItem>
+            </MudToggleGroup>
 
-        <MudTextField T="string" Label="Notes" @bind-Value="_notes" Lines="3"
-                      Placeholder="Pizza ordered, bring snacks, start early..."
-                      Variant="Variant.Outlined" />
+            <MudTextField T="string" Label="Notes" @bind-Value="_notes" Lines="3"
+                          Placeholder="Pizza ordered, bring snacks, start early..."
+                          Variant="Variant.Outlined" />
+        }
     </DialogContent>
     <DialogActions>
         @if (_existingSession is not null)
@@ -38,6 +45,7 @@
 
     [Parameter] public DateTime SelectedDate { get; set; }
 
+    private bool _loaded;
     private List<GameEntry> _games = [];
     private GameEntry? _selectedGame;
     private TimeSpan? _selectedTime = GameConstants.Defaults.DefaultSessionTime;
@@ -62,6 +70,7 @@
             var np = await NowPlayingRepo.GetCurrentAsync();
             _selectedGame = _games.FirstOrDefault(g => g.Id == np?.GameEntryId);
         }
+        _loaded = true;
     }
 
     private void OnGameChanged(GameEntry game)

@@ -4,14 +4,21 @@
 
 <MudDialog>
     <DialogContent>
-        <Selector T="GameEntry" Items="_games" Label="Current Game / Film"
-                  DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
-                  Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
-                  DisplayPropFallback="— None —" />
+        @if (!_loaded)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <Selector T="GameEntry" Items="_games" Label="Current Game / Film"
+                      DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
+                      Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
+                      DisplayPropFallback="— None —" />
 
-        <MudTextField T="string" Label="Status Note" @bind-Value="_statusNote"
-                      Placeholder="almost finished, just started, on the boss..."
-                      Variant="Variant.Outlined" Class="mt-3" />
+            <MudTextField T="string" Label="Status Note" @bind-Value="_statusNote"
+                          Placeholder="almost finished, just started, on the boss..."
+                          Variant="Variant.Outlined" Class="mt-3" />
+        }
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Clear" Color="Color.Error" Variant="Variant.Text">Clear</MudButton>
@@ -24,6 +31,7 @@
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
+    private bool _loaded;
     private List<GameEntry> _games = [];
     private GameEntry? _selectedGame;
     private string _statusNote = "";
@@ -38,6 +46,7 @@
             _selectedGame = _games.FirstOrDefault(g => g.Id == np.GameEntryId);
             _statusNote = np.StatusNote ?? "";
         }
+        _loaded = true;
     }
 
     private void OnGameChanged(GameEntry game)

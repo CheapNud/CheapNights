@@ -10,6 +10,12 @@
         </div>
     </TitleContent>
     <DialogContent>
+        @if (!_loaded)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
         <MudGrid Spacing="3">
             <MudItem xs="12" sm="6">
                 <MudTextField T="string" Label="Name" @bind-Value="Entry.Name" Variant="Variant.Outlined" />
@@ -103,6 +109,7 @@
                 </MudItem>
             }
         </MudGrid>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
@@ -116,6 +123,7 @@
 
     [Parameter] public GameEntry Entry { get; set; } = default!;
 
+    private bool _loaded;
     private DateTime? _completedDate;
     private List<Status> _statuses = [];
     private List<Category> _categories = [];
@@ -132,6 +140,7 @@
         _platforms = await db.Platforms.OrderBy(p => p.SortOrder).AsNoTracking().ToListAsync();
 
         _completedDate = Entry.CompletedAt;
+        _loaded = true;
     }
 
     private void OnCategoryChanged(Category cat)
