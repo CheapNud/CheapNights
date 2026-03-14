@@ -91,7 +91,7 @@
 
     private async Task Save()
     {
-        var scheduledAt = SelectedDate.Date + (_selectedTime ?? GameConstants.Defaults.DefaultSessionTime);
+        var scheduledAt = DateTime.SpecifyKind(SelectedDate.Date + (_selectedTime ?? GameConstants.Defaults.DefaultSessionTime), DateTimeKind.Utc);
         var session = _existingSession ?? new PlannedSession { Location = _location };
 
         session.ScheduledAt = scheduledAt;

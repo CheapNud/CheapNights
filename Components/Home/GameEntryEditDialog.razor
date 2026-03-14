@@ -177,7 +177,9 @@
     {
         if (Entry.IsCompleted)
         {
-            Entry.CompletedAt = _completedDate ?? DateTime.UtcNow;
+            Entry.CompletedAt = _completedDate is not null
+                ? DateTime.SpecifyKind(_completedDate.Value, DateTimeKind.Utc)
+                : DateTime.UtcNow;
         }
         else
         {
