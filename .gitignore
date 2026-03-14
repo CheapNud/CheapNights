@@ -1,3 +1,6 @@
+## Deployment config (contains internal hostnames)
+nginx-horror.conf
+
 ## SQLite database files
 *.db
 *.db-shm
