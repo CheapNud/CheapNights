@@ -1,5 +1,6 @@
 @inject SessionService SessionService
-@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
+@inject GameEntryRepo GameEntryRepo
+@inject NowPlayingRepo NowPlayingRepo
 
 <MudDialog>
     <DialogContent>
@@ -50,13 +51,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
-        _games = await db.GameEntries
-            .Where(g => !GameConstants.Status.ExcludedFromSelection.Contains(g.StatusLabel))
-            .OrderBy(g => g.SortOrder)
-            .ToListAsync();
+        _games = await GameEntryRepo.GetSelectableGamesAsync();
 
-        // Check for existing session on this date
         _existingSession = await SessionService.GetByDateAsync(SelectedDate);
         if (_existingSession is not null)
         {
@@ -67,8 +63,7 @@
         }
         else
         {
-            // Default to current NowPlaying game
-            var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
+            var np = await NowPlayingRepo.GetCurrentAsync();
             _selectedGameId = np?.GameEntryId;
         }
     }

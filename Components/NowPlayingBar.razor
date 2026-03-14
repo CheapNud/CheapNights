@@ -1,5 +1,5 @@
 @implements IDisposable
-@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
+@inject NowPlayingRepo NowPlayingRepo
 @inject NowPlayingService NowPlayingService
 @inject IDialogService DialogService
 
@@ -39,10 +39,7 @@
 
     private async Task LoadNowPlaying()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var np = await db.NowPlaying
-            .Include(n => n.GameEntry)
-            .FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
+        var np = await NowPlayingRepo.GetCurrentAsync();
 
         if (np?.GameEntry is not null)
         {

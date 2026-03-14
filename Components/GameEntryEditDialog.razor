@@ -1,4 +1,5 @@
 @inject RoadmapService RoadmapService
+@inject StatusRepo StatusRepo
 
 <MudDialog>
     <TitleContent>
@@ -26,10 +27,10 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect T="string" Label="Status" @bind-Value="Entry.StatusLabel" Variant="Variant.Outlined">
-                    @foreach (var status in _statusOptions)
+                <MudSelect T="int?" Label="Status" @bind-Value="Entry.StatusId" Variant="Variant.Outlined">
+                    @foreach (var status in _statuses)
                     {
-                        <MudSelectItem T="string" Value="@status">@status</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int?)status.Id)">@status.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -129,11 +130,11 @@
     [Parameter] public GameEntry Entry { get; set; } = default!;
 
     private DateTime? _completedDate;
+    private List<Status> _statuses = [];
 
-    private readonly string[] _statusOptions = GameConstants.Status.All;
-
-    protected override void OnParametersSet()
+    protected override async Task OnInitializedAsync()
     {
+        _statuses = await StatusRepo.GetSelectableAsync();
         _completedDate = Entry.CompletedAt;
     }
 

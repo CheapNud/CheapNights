@@ -1,6 +1,8 @@
+using CheapHelpers.Models.Contracts;
+
 namespace CheapNights.Models;
 
-public class GameEntry
+public class GameEntry : IEntityId
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -8,7 +10,8 @@ public class GameEntry
     public required string EntryType { get; set; }
     public string? Protagonist { get; set; }
     public string? StoryEra { get; set; }
-    public string? StatusLabel { get; set; }
+    public int? StatusId { get; set; }
+    public Status? Status { get; set; }
     public int StarRating { get; set; }
     public string? LengthLabel { get; set; }
     public string? PlatformBrecht { get; set; }

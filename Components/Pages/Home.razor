@@ -1,5 +1,5 @@
 @page "/"
-@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
+@inject NowPlayingRepo NowPlayingRepo
 
 <PageTitle>Horror Roadmap</PageTitle>
 
@@ -28,8 +28,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
+        var np = await NowPlayingRepo.GetCurrentAsync();
         _nowPlayingGameId = np?.GameEntryId;
     }
 }

@@ -1,4 +1,5 @@
-@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
+@inject NowPlayingRepo NowPlayingRepo
+@inject GameEntryRepo GameEntryRepo
 @inject NowPlayingService NowPlayingService
 
 <MudDialog>
@@ -34,13 +35,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
-        _games = await db.GameEntries
-            .Where(g => !GameConstants.Status.ExcludedFromSelection.Contains(g.StatusLabel))
-            .OrderBy(g => g.SortOrder)
-            .ToListAsync();
+        _games = await GameEntryRepo.GetSelectableGamesAsync();
 
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
+        var np = await NowPlayingRepo.GetCurrentAsync();
         if (np is not null)
         {
             _selectedGameId = np.GameEntryId;
@@ -50,30 +47,14 @@
 
     private async Task Save()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
-        if (np is not null)
-        {
-            np.GameEntryId = _selectedGameId;
-            np.StatusNote = _statusNote;
-            np.UpdatedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync();
-        }
+        await NowPlayingRepo.SetCurrentAsync(_selectedGameId, _statusNote);
         NowPlayingService.NotifyChanged();
         MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task Clear()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
-        if (np is not null)
-        {
-            np.GameEntryId = null;
-            np.StatusNote = null;
-            np.UpdatedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync();
-        }
+        await NowPlayingRepo.ClearAsync();
         NowPlayingService.NotifyChanged();
         MudDialog.Close(DialogResult.Ok(true));
     }

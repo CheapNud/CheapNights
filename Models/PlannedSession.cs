@@ -1,6 +1,8 @@
+using CheapHelpers.Models.Contracts;
+
 namespace CheapNights.Models;
 
-public class PlannedSession
+public class PlannedSession : IEntityId
 {
     public int Id { get; set; }
     public DateTime ScheduledAt { get; set; }
