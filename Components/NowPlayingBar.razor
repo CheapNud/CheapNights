@@ -42,7 +42,7 @@
         await using var db = await DbFactory.CreateDbContextAsync();
         var np = await db.NowPlaying
             .Include(n => n.GameEntry)
-            .FirstOrDefaultAsync(n => n.Id == 1);
+            .FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
 
         if (np?.GameEntry is not null)
         {
