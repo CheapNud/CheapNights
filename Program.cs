@@ -35,7 +35,7 @@ builder.Services.AddDbContextFactory<HorrorDbContext>(opt =>
 {
     if (builder.Environment.IsDevelopment())
     {
-        opt.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=horror.db");
+        opt.UseSqlite("Data Source=horror.db");
     }
     else
     {
