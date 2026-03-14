@@ -3,9 +3,9 @@
 
 <div class="mb-16">
     <div class="d-flex align-center gap-4 mb-6">
-        <span class="section-badge @Category.ToLower()">@PublisherLabel</span>
-        <MudText Typo="Typo.h4" Class="@($"section-title-{Category.ToLower()}")">@Title</MudText>
-        <div class="section-divider @Category.ToLower() flex-1"></div>
+        <span class="section-badge @(_categoryCode?.ToLower())">@PublisherLabel</span>
+        <MudText Typo="Typo.h4" Class="@($"section-title-{_categoryCode?.ToLower()}")">@Title</MudText>
+        <div class="section-divider @(_categoryCode?.ToLower()) flex-1"></div>
     </div>
 
     <MudTable Items="_entries" Hover="true" Elevation="0" Breakpoint="Breakpoint.None"
@@ -13,8 +13,8 @@
         <HeaderContent>
             <MudTh Style="width:48px; text-align:center">#</MudTh>
             <MudTh>Game</MudTh>
-            <MudTh>@(Category == GameConstants.Categories.SilentHill ? "Flavour" : "Protagonist")</MudTh>
-            <MudTh>@(Category == GameConstants.Categories.SilentHill ? "Setting" : "Story Era")</MudTh>
+            <MudTh>@(_categoryCode == "SH" ? "Flavour" : "Protagonist")</MudTh>
+            <MudTh>@(_categoryCode == "SH" ? "Setting" : "Story Era")</MudTh>
             <MudTh>Status</MudTh>
             <MudTh Style="text-align:center">Length</MudTh>
             <MudTh>Platform</MudTh>
@@ -83,16 +83,18 @@
 </div>
 
 @code {
-    [Parameter] public string Category { get; set; } = GameConstants.Categories.ResidentEvil;
-    [Parameter] public string Title { get; set; } = "Resident Evil";
-    [Parameter] public string PublisherLabel { get; set; } = "Capcom";
+    [Parameter] public int CategoryId { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string PublisherLabel { get; set; } = "";
     [Parameter] public int? NowPlayingGameId { get; set; }
 
     private List<GameEntry> _entries = [];
+    private string? _categoryCode;
 
     protected override async Task OnInitializedAsync()
     {
-        _entries = await RoadmapService.GetByCategoryAsync(Category);
+        _entries = await RoadmapService.GetByCategoryAsync(CategoryId);
+        _categoryCode = _entries.FirstOrDefault()?.Category?.Code;
     }
 
     private async Task OnRowClicked(TableRowClickEventArgs<GameEntry> args)
@@ -107,7 +109,7 @@
 
         if (dialogResult is not null && !dialogResult.Canceled)
         {
-            _entries = await RoadmapService.GetByCategoryAsync(Category);
+            _entries = await RoadmapService.GetByCategoryAsync(CategoryId);
             StateHasChanged();
         }
     }
@@ -122,7 +124,7 @@
 
         if (entry.Status?.StripeColor is not null)
         {
-            var stripeVar = Category == GameConstants.Categories.SilentHill && StatusName(entry) == "Essential"
+            var stripeVar = _categoryCode == "SH" && StatusName(entry) == "Essential"
                 ? "stripe-essential-sh"
                 : $"stripe-{StatusName(entry).ToLower()}";
             classes.Add(stripeVar);
@@ -151,8 +153,8 @@
 
     private bool IsNextUp(GameEntry entry) =>
         !entry.IsCompleted
-        && ((entry.SortLabel == "2" && Category == GameConstants.Categories.ResidentEvil)
-         || (entry.SortLabel == "0" && Category == GameConstants.Categories.SilentHill));
+        && ((_categoryCode == "RE" && entry.SortLabel == "2")
+         || (_categoryCode == "SH" && entry.SortLabel == "0"));
 
     private string GetOrderBadgeClass(GameEntry entry)
     {
@@ -168,46 +170,38 @@
         return $"border-color:{chipColor}40; color:{chipColor}; background:{chipBg};";
     }
 
-    private string GetPlatformDisplay(GameEntry entry)
+    private static string GetPlatformDisplay(GameEntry entry)
     {
-        if (!string.IsNullOrEmpty(entry.PlatformPieter)) return entry.PlatformPieter;
-        if (!string.IsNullOrEmpty(entry.PlatformBrecht)) return entry.PlatformBrecht;
+        if (entry.PlatformPieter is not null) return entry.PlatformPieter.Name;
+        if (entry.PlatformBrecht is not null) return entry.PlatformBrecht.Name;
         return "Streaming";
     }
 
     private RenderFragment GetPlatformMarkup(GameEntry entry) => builder =>
     {
         var seq = 0;
-        if (!string.IsNullOrEmpty(entry.PlatformBrecht))
+        if (entry.PlatformBrecht is not null)
         {
             builder.OpenElement(seq++, "span");
             builder.AddAttribute(seq++, "class", "platform-you");
-            builder.AddContent(seq++, $"{GameConstants.Players.Brecht}: {entry.PlatformBrecht}");
+            builder.AddContent(seq++, $"{GameConstants.Players.Brecht}: {entry.PlatformBrecht.Name}");
             builder.CloseElement();
         }
-        if (!string.IsNullOrEmpty(entry.PlatformPieter))
+        if (entry.PlatformPieter is not null)
         {
-            if (!string.IsNullOrEmpty(entry.PlatformBrecht))
+            if (entry.PlatformBrecht is not null)
             {
                 builder.OpenElement(seq++, "br");
                 builder.CloseElement();
             }
             builder.OpenElement(seq++, "span");
             builder.AddAttribute(seq++, "class", "platform-friend");
-            builder.AddContent(seq++, $"{GameConstants.Players.Pieter}: {entry.PlatformPieter}");
+            builder.AddContent(seq++, $"{GameConstants.Players.Pieter}: {entry.PlatformPieter.Name}");
             builder.CloseElement();
         }
-        if (StatusName(entry) == "Skip" && entry.PlatformBrecht?.Contains(GameConstants.Platforms.Steam) == true)
+        if (entry.PlatformBrecht is null && entry.PlatformPieter is null)
         {
-            builder.OpenElement(seq++, "span");
-            builder.AddAttribute(seq++, "class", "platform-dead");
-            builder.AddContent(seq++, $"{GameConstants.Players.Brecht}: {entry.PlatformBrecht}");
-            builder.CloseElement();
-        }
-        if (string.IsNullOrEmpty(entry.PlatformBrecht) && string.IsNullOrEmpty(entry.PlatformPieter))
-        {
-            var sn = StatusName(entry);
-            if (sn is "Recommended" or "Essential" && !entry.Name.Contains("Buy", StringComparison.OrdinalIgnoreCase))
+            if (StatusName(entry) is "Recommended" or "Essential")
             {
                 builder.OpenElement(seq++, "span");
                 builder.AddAttribute(seq++, "class", "platform-buy");

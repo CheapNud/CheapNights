@@ -7,12 +7,16 @@ namespace CheapNights.Repositories;
 
 public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRepo<HorrorDbContext>(factory)
 {
-    public async Task<List<GameEntry>> GetByCategoryAsync(string category)
+    public async Task<List<GameEntry>> GetByCategoryAsync(int categoryId)
     {
         using var db = _factory.CreateDbContext();
         return await db.GameEntries
             .Include(g => g.Status)
-            .Where(g => g.Category == category)
+            .Include(g => g.Category)
+            .Include(g => g.EntryType)
+            .Include(g => g.PlatformBrecht)
+            .Include(g => g.PlatformPieter)
+            .Where(g => g.CategoryId == categoryId)
             .OrderBy(g => g.SortOrder)
             .AsNoTracking()
             .ToListAsync();
@@ -34,6 +38,10 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
         using var db = _factory.CreateDbContext();
         return await db.GameEntries
             .Include(g => g.Status)
+            .Include(g => g.Category)
+            .Include(g => g.EntryType)
+            .Include(g => g.PlatformBrecht)
+            .Include(g => g.PlatformPieter)
             .OrderBy(g => g.SortOrder)
             .AsNoTracking()
             .ToListAsync();
@@ -46,8 +54,8 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
         if (entry is null) return;
 
         entry.Name = updated.Name;
-        entry.Category = updated.Category;
-        entry.EntryType = updated.EntryType;
+        entry.CategoryId = updated.CategoryId;
+        entry.EntryTypeId = updated.EntryTypeId;
         entry.IsMovie = updated.IsMovie;
         entry.StatusId = updated.StatusId;
         entry.GameNote = updated.GameNote;
@@ -55,8 +63,8 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
         entry.StoryEra = updated.StoryEra;
         entry.StarRating = updated.StarRating;
         entry.LengthLabel = updated.LengthLabel;
-        entry.PlatformBrecht = updated.PlatformBrecht;
-        entry.PlatformPieter = updated.PlatformPieter;
+        entry.PlatformBrechtId = updated.PlatformBrechtId;
+        entry.PlatformPieterId = updated.PlatformPieterId;
         entry.IsCouchCoop = updated.IsCouchCoop;
         entry.SortLabel = updated.SortLabel;
         entry.SortOrder = updated.SortOrder;

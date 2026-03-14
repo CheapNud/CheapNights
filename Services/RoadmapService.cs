@@ -7,7 +7,7 @@ public class RoadmapService(GameEntryRepo repo)
 {
     public Task<List<GameEntry>> GetAllAsync() => repo.GetAllOrderedAsync();
 
-    public Task<List<GameEntry>> GetByCategoryAsync(string category) => repo.GetByCategoryAsync(category);
+    public Task<List<GameEntry>> GetByCategoryAsync(int categoryId) => repo.GetByCategoryAsync(categoryId);
 
     public Task MarkCompletedAsync(int id, string? completedNote) => repo.MarkCompletedAsync(id, completedNote);
 

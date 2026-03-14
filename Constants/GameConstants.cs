@@ -2,29 +2,6 @@ namespace CheapNights.Constants;
 
 public static class GameConstants
 {
-    public static class Categories
-    {
-        public const string ResidentEvil = "RE";
-        public const string SilentHill = "SH";
-    }
-
-    public static class EntryTypes
-    {
-        public const string Game = "Game";
-        public const string Movie = "Movie";
-        public const string DLC = "DLC";
-    }
-
-    public static class Platforms
-    {
-        public const string Steam = "Steam";
-        public const string PS5 = "PS5";
-
-        public const string Plex = "Plex";
-
-        public static readonly string[] All = [Steam, PS5, Plex];
-    }
-
     public static class Players
     {
         public const string Brecht = "Brecht";
