@@ -1,18 +1,27 @@
-using System.Diagnostics;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace CheapNights.Services;
 
-public class PlexAuthService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+public class PlexAuthService
 {
     private const string PlexApiBase = "https://plex.tv/api/v2";
     private const string PlexAuthUrl = "https://app.plex.tv/auth#";
 
-    private string ClientId => configuration["Plex:ClientId"] ?? "CheapNights";
-    private string ProductName => configuration["Plex:ProductName"] ?? "CheapNights";
-    private string AdminToken => configuration["Plex:AdminToken"] ?? "";
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string _clientId;
+    private readonly string _productName;
+    private readonly string _adminToken;
+
+    public PlexAuthService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    {
+        _httpClientFactory = httpClientFactory;
+        _clientId = configuration["Plex:ClientId"] ?? "CheapNights";
+        _productName = configuration["Plex:ProductName"] ?? "CheapNights";
+        _adminToken = configuration["Plex:AdminToken"]
+            ?? throw new InvalidOperationException("Plex:AdminToken is not configured. Set it via user-secrets (dev) or environment variable (prod).");
+    }
 
     /// <summary>
     /// Creates a PIN on Plex and returns (pinId, pinCode) for the auth flow.
@@ -33,7 +42,7 @@ public class PlexAuthService(IConfiguration configuration, IHttpClientFactory ht
     /// </summary>
     public string GetAuthRedirectUrl(string pinCode, string forwardUrl)
     {
-        return $"{PlexAuthUrl}?clientID={ClientId}&code={pinCode}&forwardUrl={Uri.EscapeDataString(forwardUrl)}&context%5Bdevice%5D%5Bproduct%5D={ProductName}";
+        return $"{PlexAuthUrl}?clientID={_clientId}&code={pinCode}&forwardUrl={Uri.EscapeDataString(forwardUrl)}&context%5Bdevice%5D%5Bproduct%5D={_productName}";
     }
 
     /// <summary>
@@ -70,7 +79,7 @@ public class PlexAuthService(IConfiguration configuration, IHttpClientFactory ht
     public async Task<bool> HasServerAccessAsync(string authToken, int plexUserId)
     {
         // Check if this user is the server owner
-        using var ownerClient = CreateClient(AdminToken);
+        using var ownerClient = CreateClient(_adminToken);
         var ownerResponse = await ownerClient.GetAsync($"{PlexApiBase}/user");
         if (ownerResponse.IsSuccessStatusCode)
         {
@@ -79,22 +88,25 @@ public class PlexAuthService(IConfiguration configuration, IHttpClientFactory ht
         }
 
         // Check shared users (friends) via the XML API
-        using var client = httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Add("X-Plex-Token", AdminToken);
+        using var client = _httpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Plex-Token", _adminToken);
 
         var response = await client.GetAsync("https://plex.tv/api/users");
         if (!response.IsSuccessStatusCode) return false;
 
         var xml = await response.Content.ReadAsStringAsync();
-        return xml.Contains($"id=\"{plexUserId}\"");
+        var doc = XDocument.Parse(xml);
+        var userIdStr = plexUserId.ToString();
+
+        return doc.Descendants("User").Any(u => u.Attribute("id")?.Value == userIdStr);
     }
 
     private HttpClient CreateClient(string? token = null)
     {
-        var client = httpClientFactory.CreateClient();
+        var client = _httpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        client.DefaultRequestHeaders.Add("X-Plex-Client-Identifier", ClientId);
-        client.DefaultRequestHeaders.Add("X-Plex-Product", ProductName);
+        client.DefaultRequestHeaders.Add("X-Plex-Client-Identifier", _clientId);
+        client.DefaultRequestHeaders.Add("X-Plex-Product", _productName);
         if (token is not null)
             client.DefaultRequestHeaders.Add("X-Plex-Token", token);
         return client;
