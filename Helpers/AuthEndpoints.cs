@@ -19,7 +19,7 @@ public static class AuthEndpoints
             context.Response.Cookies.Append("PlexPinId", pin.Value.PinId.ToString(), new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment(),
+                Secure = context.Request.IsHttps,
                 SameSite = SameSiteMode.Lax,
                 MaxAge = TimeSpan.FromMinutes(5)
             });
