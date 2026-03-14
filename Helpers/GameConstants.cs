@@ -1,4 +1,4 @@
-namespace CheapNights.Constants;
+namespace CheapNights.Helpers;
 
 public static class GameConstants
 {
