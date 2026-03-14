@@ -56,12 +56,17 @@ builder.Services.AddSingleton<PlexAuthService>();
 
 var app = builder.Build();
 
-// Auto-create database on startup
+// Dev: EnsureCreated (delete horror.db to reset schema + seed data)
+// Prod: MigrateAsync applies pending migrations on startup
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<HorrorDbContext>>();
     await using var db = factory.CreateDbContext();
-    await db.Database.EnsureCreatedAsync();
+
+    if (app.Environment.IsDevelopment())
+        await db.Database.EnsureCreatedAsync();
+    else
+        await db.Database.MigrateAsync();
 }
 
 if (!app.Environment.IsDevelopment())

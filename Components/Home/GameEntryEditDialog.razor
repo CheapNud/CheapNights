@@ -104,8 +104,8 @@
                     <MudDatePicker Label="Completed Date" @bind-Date="_completedDate" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string" Label="Completed Note" @bind-Value="Entry.CompletedNote"
-                                  Variant="Variant.Outlined" Placeholder="Great co-op run..." />
+                    <MudTextField T="string" Label="Completed Time" @bind-Value="Entry.CompletedTime"
+                                  Variant="Variant.Outlined" Placeholder="13h" />
                 </MudItem>
             }
         </MudGrid>
@@ -182,7 +182,7 @@
         else
         {
             Entry.CompletedAt = null;
-            Entry.CompletedNote = null;
+            Entry.CompletedTime = null;
         }
 
         await RoadmapService.SaveEntryAsync(Entry);

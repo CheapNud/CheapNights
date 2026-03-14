@@ -70,12 +70,12 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
         entry.SortOrder = updated.SortOrder;
         entry.IsCompleted = updated.IsCompleted;
         entry.CompletedAt = updated.CompletedAt;
-        entry.CompletedNote = updated.CompletedNote;
+        entry.CompletedTime = updated.CompletedTime;
 
         await db.SaveChangesAsync();
     }
 
-    public async Task MarkCompletedAsync(int id, string? completedNote)
+    public async Task MarkCompletedAsync(int id, string? completedTime)
     {
         using var db = _factory.CreateDbContext();
         var entry = await db.GameEntries.FindAsync(id);
@@ -83,7 +83,7 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
 
         entry.IsCompleted = true;
         entry.CompletedAt = DateTime.UtcNow;
-        entry.CompletedNote = completedNote;
+        entry.CompletedTime = completedTime;
         await db.SaveChangesAsync();
     }
 
@@ -95,7 +95,7 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
 
         entry.IsCompleted = false;
         entry.CompletedAt = null;
-        entry.CompletedNote = null;
+        entry.CompletedTime = null;
         await db.SaveChangesAsync();
     }
 }

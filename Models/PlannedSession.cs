@@ -11,5 +11,6 @@ public class PlannedSession : IEntityId
     public GameEntry? GameEntry { get; set; }
     public string? CustomGame { get; set; }
     public string? Notes { get; set; }
+    public bool UseCurrentGame { get; set; }
     public bool IsCompleted { get; set; }
 }

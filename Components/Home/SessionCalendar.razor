@@ -1,4 +1,7 @@
+@implements IDisposable
 @inject SessionService SessionService
+@inject NowPlayingRepo NowPlayingRepo
+@inject NowPlayingService NowPlayingService
 @inject IDialogService DialogService
 
 <MudText Typo="Typo.h5" Class="gradient-title mb-6 mt-6">SESSION PLANNER</MudText>
@@ -35,7 +38,7 @@
                 @if (cell.Session is not null)
                 {
                     var locClass = $"loc-{cell.Session.Location}";
-                    var gameName = cell.Session.GameEntry?.Name ?? cell.Session.CustomGame ?? "TBD";
+                    var gameName = cell.Session.UseCurrentGame ? (_nowPlayingName ?? "Now Playing") : (cell.Session.GameEntry?.Name ?? cell.Session.CustomGame ?? "TBD");
                     var timeStr = cell.Session.ScheduledAt.ToString("HH:mm");
                     <span class="cal-session-dot @locClass">@timeStr @gameName</span>
                 }
@@ -61,7 +64,7 @@
                     @session.ScheduledAt.ToString("HH:mm")
                 </MudText>
                 <MudText Typo="Typo.body2" Class="flex-1">
-                    @(session.GameEntry?.Name ?? session.CustomGame ?? "TBD")
+                    @(session.UseCurrentGame ? (_nowPlayingName ?? "Now Playing") : (session.GameEntry?.Name ?? session.CustomGame ?? "TBD"))
                 </MudText>
                 <span class="upcoming-loc @locClass">@locLabel</span>
                 @if (!string.IsNullOrEmpty(session.Notes))
@@ -78,14 +81,24 @@
     private List<CalendarCell> _calendarCells = [];
     private List<PlannedSession> _monthSessions = [];
     private List<PlannedSession> _upcoming = [];
+    private string? _nowPlayingName;
 
     protected override async Task OnInitializedAsync()
     {
+        NowPlayingService.OnChange += OnNowPlayingChanged;
         await LoadMonth();
+    }
+
+    private async Task OnNowPlayingChanged()
+    {
+        await LoadMonth();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadMonth()
     {
+        var np = await NowPlayingRepo.GetCurrentAsync();
+        _nowPlayingName = np?.GameEntry?.Name;
         _monthSessions = await SessionService.GetSessionsForMonthAsync(_currentDate.Year, _currentDate.Month);
         _upcoming = await SessionService.GetUpcomingAsync(GameConstants.Defaults.UpcomingSessionCount);
         BuildCalendar();
@@ -139,5 +152,10 @@
 
         if (dialogResult is not null && !dialogResult.Canceled)
             await LoadMonth();
+    }
+
+    public void Dispose()
+    {
+        NowPlayingService.OnChange -= OnNowPlayingChanged;
     }
 }

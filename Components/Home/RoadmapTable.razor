@@ -37,6 +37,10 @@
                     {
                         <div class="game-note">@context.GameNote</div>
                     }
+                    @if (context.IsCompleted && !string.IsNullOrEmpty(context.CompletedTime))
+                    {
+                        <div class="game-note">completed in @context.CompletedTime</div>
+                    }
                 </div>
             </MudTd>
             <MudTd Class="@GetCellClasses(context)">
