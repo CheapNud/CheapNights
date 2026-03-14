@@ -4,15 +4,10 @@
 
 <MudDialog>
     <DialogContent>
-        <MudSelect T="int?" Label="Current Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined">
-            <MudSelectItem T="int?" Value="@((int?)null)">— None —</MudSelectItem>
-            @foreach (var game in _games)
-            {
-                <MudSelectItem T="int?" Value="@((int?)game.Id)">
-                    @(game.IsMovie ? "🎬" : "🎮") @game.Name
-                </MudSelectItem>
-            }
-        </MudSelect>
+        <Selector T="GameEntry" Items="_games" Label="Current Game / Film"
+                  DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
+                  Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
+                  DisplayPropFallback="— None —" />
 
         <MudTextField T="string" Label="Status Note" @bind-Value="_statusNote"
                       Placeholder="almost finished, just started, on the boss..."
@@ -30,7 +25,7 @@
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private List<GameEntry> _games = [];
-    private int? _selectedGameId;
+    private GameEntry? _selectedGame;
     private string _statusNote = "";
 
     protected override async Task OnInitializedAsync()
@@ -40,14 +35,19 @@
         var np = await NowPlayingRepo.GetCurrentAsync();
         if (np is not null)
         {
-            _selectedGameId = np.GameEntryId;
+            _selectedGame = _games.FirstOrDefault(g => g.Id == np.GameEntryId);
             _statusNote = np.StatusNote ?? "";
         }
     }
 
+    private void OnGameChanged(GameEntry game)
+    {
+        _selectedGame = game;
+    }
+
     private async Task Save()
     {
-        await NowPlayingRepo.SetCurrentAsync(_selectedGameId, _statusNote);
+        await NowPlayingRepo.SetCurrentAsync(_selectedGame?.Id, _statusNote);
         await NowPlayingService.NotifyChangedAsync();
         MudDialog.Close(DialogResult.Ok(true));
     }

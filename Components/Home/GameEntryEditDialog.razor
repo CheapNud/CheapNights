@@ -15,28 +15,19 @@
                 <MudTextField T="string" Label="Name" @bind-Value="Entry.Name" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="6" sm="3">
-                <MudSelect T="int" Label="Category" @bind-Value="Entry.CategoryId" Variant="Variant.Outlined">
-                    @foreach (var cat in _categories)
-                    {
-                        <MudSelectItem T="int" Value="@cat.Id">@cat.Name</MudSelectItem>
-                    }
-                </MudSelect>
+                <Selector T="Category" Items="_categories" Label="Category"
+                          DisplayProp="@(c => c.Name)" Value="Entry.Category"
+                          ValueChanged="@((Category c) => OnCategoryChanged(c))" OnlyDBValues="true" />
             </MudItem>
             <MudItem xs="6" sm="3">
-                <MudSelect T="int" Label="Type" @bind-Value="Entry.EntryTypeId" Variant="Variant.Outlined">
-                    @foreach (var et in _entryTypes)
-                    {
-                        <MudSelectItem T="int" Value="@et.Id">@et.Name</MudSelectItem>
-                    }
-                </MudSelect>
+                <Selector T="EntryType" Items="_entryTypes" Label="Type"
+                          DisplayProp="@(e => e.Name)" Value="Entry.EntryType"
+                          ValueChanged="@((EntryType e) => OnEntryTypeChanged(e))" OnlyDBValues="true" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect T="int?" Label="Status" @bind-Value="Entry.StatusId" Variant="Variant.Outlined">
-                    @foreach (var status in _statuses)
-                    {
-                        <MudSelectItem T="int?" Value="@((int?)status.Id)">@status.Name</MudSelectItem>
-                    }
-                </MudSelect>
+                <Selector T="Status" Items="_statuses" Label="Status"
+                          DisplayProp="@(s => s.Name)" Value="Entry.Status"
+                          ValueChanged="@((Status s) => OnStatusChanged(s))" DisplayPropFallback="— None —" />
             </MudItem>
 
             <MudItem xs="12">
@@ -81,22 +72,14 @@
             </MudItem>
 
             <MudItem xs="12" sm="6">
-                <MudSelect T="int?" Label="Platform (Brecht)" @bind-Value="Entry.PlatformBrechtId"
-                           Variant="Variant.Outlined" Clearable="true">
-                    @foreach (var platform in _platforms)
-                    {
-                        <MudSelectItem T="int?" Value="@((int?)platform.Id)">@platform.Name</MudSelectItem>
-                    }
-                </MudSelect>
+                <Selector T="Platform" Items="_platforms" Label="Platform (Brecht)"
+                          DisplayProp="@(p => p.Name)" Value="Entry.PlatformBrecht"
+                          ValueChanged="@((Platform p) => OnPlatformBrechtChanged(p))" DisplayPropFallback="— None —" />
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect T="int?" Label="Platform (Pieter)" @bind-Value="Entry.PlatformPieterId"
-                           Variant="Variant.Outlined" Clearable="true">
-                    @foreach (var platform in _platforms)
-                    {
-                        <MudSelectItem T="int?" Value="@((int?)platform.Id)">@platform.Name</MudSelectItem>
-                    }
-                </MudSelect>
+                <Selector T="Platform" Items="_platforms" Label="Platform (Pieter)"
+                          DisplayProp="@(p => p.Name)" Value="Entry.PlatformPieter"
+                          ValueChanged="@((Platform p) => OnPlatformPieterChanged(p))" DisplayPropFallback="— None —" />
             </MudItem>
 
             <MudItem xs="4">
@@ -149,6 +132,36 @@
         _platforms = await db.Platforms.OrderBy(p => p.SortOrder).AsNoTracking().ToListAsync();
 
         _completedDate = Entry.CompletedAt;
+    }
+
+    private void OnCategoryChanged(Category cat)
+    {
+        Entry.Category = cat;
+        Entry.CategoryId = cat?.Id ?? 0;
+    }
+
+    private void OnEntryTypeChanged(EntryType et)
+    {
+        Entry.EntryType = et;
+        Entry.EntryTypeId = et?.Id ?? 0;
+    }
+
+    private void OnStatusChanged(Status status)
+    {
+        Entry.Status = status;
+        Entry.StatusId = status?.Id;
+    }
+
+    private void OnPlatformBrechtChanged(Platform platform)
+    {
+        Entry.PlatformBrecht = platform;
+        Entry.PlatformBrechtId = platform?.Id;
+    }
+
+    private void OnPlatformPieterChanged(Platform platform)
+    {
+        Entry.PlatformPieter = platform;
+        Entry.PlatformPieterId = platform?.Id;
     }
 
     private async Task Save()

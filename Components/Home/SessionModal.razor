@@ -6,15 +6,11 @@
     <DialogContent>
         <MudTimePicker Label="Time" @bind-Time="_selectedTime" Variant="Variant.Outlined" />
 
-        <MudSelect T="int?" Label="Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined" Class="mt-3">
-            <MudSelectItem T="int?" Value="@((int?)null)">🍕 @GameConstants.Defaults.DefaultCustomGame</MudSelectItem>
-            @foreach (var game in _games)
-            {
-                <MudSelectItem T="int?" Value="@((int?)game.Id)">
-                    @(game.IsMovie ? "🎬" : "🎮") @game.Name
-                </MudSelectItem>
-            }
-        </MudSelect>
+        <Selector T="GameEntry" Items="_games" Label="Game / Film"
+                  DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
+                  Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
+                  DisplayPropFallback="@($"🍕 {GameConstants.Defaults.DefaultCustomGame}")"
+                  Class="mt-3" />
 
         <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
         <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
@@ -43,7 +39,7 @@
     [Parameter] public DateTime SelectedDate { get; set; }
 
     private List<GameEntry> _games = [];
-    private int? _selectedGameId;
+    private GameEntry? _selectedGame;
     private TimeSpan? _selectedTime = GameConstants.Defaults.DefaultSessionTime;
     private string _location = GameConstants.Players.BrechtKey;
     private string _notes = "";
@@ -56,7 +52,7 @@
         _existingSession = await SessionService.GetByDateAsync(SelectedDate);
         if (_existingSession is not null)
         {
-            _selectedGameId = _existingSession.GameEntryId;
+            _selectedGame = _games.FirstOrDefault(g => g.Id == _existingSession.GameEntryId);
             _selectedTime = _existingSession.ScheduledAt.TimeOfDay;
             _location = _existingSession.Location;
             _notes = _existingSession.Notes ?? "";
@@ -64,8 +60,13 @@
         else
         {
             var np = await NowPlayingRepo.GetCurrentAsync();
-            _selectedGameId = np?.GameEntryId;
+            _selectedGame = _games.FirstOrDefault(g => g.Id == np?.GameEntryId);
         }
+    }
+
+    private void OnGameChanged(GameEntry game)
+    {
+        _selectedGame = game;
     }
 
     private async Task Save()
@@ -74,10 +75,10 @@
         var session = _existingSession ?? new PlannedSession { Location = _location };
 
         session.ScheduledAt = scheduledAt;
-        session.GameEntryId = _selectedGameId;
+        session.GameEntryId = _selectedGame?.Id;
         session.Location = _location;
         session.Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes;
-        session.CustomGame = _selectedGameId is null ? GameConstants.Defaults.DefaultCustomGame : null;
+        session.CustomGame = _selectedGame is null ? GameConstants.Defaults.DefaultCustomGame : null;
 
         await SessionService.SaveSessionAsync(session);
         MudDialog.Close(DialogResult.Ok(true));
