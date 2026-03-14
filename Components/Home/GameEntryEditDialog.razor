@@ -23,17 +23,17 @@
             <MudItem xs="6" sm="3">
                 <Selector C="Category" Items="_categories" Label="Category"
                           DisplayProp="@(c => c.Name)" Value="Entry.Category"
-                          ValueChanged="@((Category c) => OnCategoryChanged(c))" OnlyDBValues="true" />
+                          ValueChanged="OnCategoryChanged" OnlyDBValues="true" />
             </MudItem>
             <MudItem xs="6" sm="3">
                 <Selector C="EntryType" Items="_entryTypes" Label="Type"
                           DisplayProp="@(e => e.Name)" Value="Entry.EntryType"
-                          ValueChanged="@((EntryType e) => OnEntryTypeChanged(e))" OnlyDBValues="true" />
+                          ValueChanged="OnEntryTypeChanged" OnlyDBValues="true" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <Selector C="Status" Items="_statuses" Label="Status"
                           DisplayProp="@(s => s.Name)" Value="Entry.Status"
-                          ValueChanged="@((Status s) => OnStatusChanged(s))" DisplayPropFallback="— None —" />
+                          ValueChanged="OnStatusChanged" DisplayPropFallback="— None —" />
             </MudItem>
 
             <MudItem xs="12">
@@ -72,12 +72,12 @@
             <MudItem xs="12" sm="6">
                 <Selector C="Platform" Items="_platforms" Label="Platform (Brecht)"
                           DisplayProp="@(p => p.Name)" Value="Entry.PlatformBrecht"
-                          ValueChanged="@((Platform p) => OnPlatformBrechtChanged(p))" DisplayPropFallback="— None —" />
+                          ValueChanged="OnPlatformBrechtChanged" DisplayPropFallback="— None —" />
             </MudItem>
             <MudItem xs="12" sm="6">
                 <Selector C="Platform" Items="_platforms" Label="Platform (Pieter)"
                           DisplayProp="@(p => p.Name)" Value="Entry.PlatformPieter"
-                          ValueChanged="@((Platform p) => OnPlatformPieterChanged(p))" DisplayPropFallback="— None —" />
+                          ValueChanged="OnPlatformPieterChanged" DisplayPropFallback="— None —" />
             </MudItem>
 
             <MudItem xs="4">

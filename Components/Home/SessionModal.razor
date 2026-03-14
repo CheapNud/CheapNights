@@ -24,7 +24,7 @@
             {
                 <Selector C="GameEntry" Items="_games" Label="Game / Film"
                           DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
-                          Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
+                          Value="_selectedGame" ValueChanged="OnGameChanged"
                           DisplayPropFallback="@($"🍕 {GameConstants.Defaults.DefaultCustomGame}")"
                           Class="mt-3" />
             }

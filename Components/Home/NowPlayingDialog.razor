@@ -12,7 +12,7 @@
         {
             <Selector C="GameEntry" Items="_games" Label="Current Game / Film"
                       DisplayProp="@(g => $"{(g.IsMovie ? "🎬" : "🎮")} {g.Name}")"
-                      Value="_selectedGame" ValueChanged="@((GameEntry g) => OnGameChanged(g))"
+                      Value="_selectedGame" ValueChanged="OnGameChanged"
                       DisplayPropFallback="— None —" />
 
             <div class="d-flex flex-wrap gap-2 mt-3 mb-2">
