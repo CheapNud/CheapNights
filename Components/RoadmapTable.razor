@@ -1,6 +1,5 @@
 @inject RoadmapService RoadmapService
 @inject IDialogService DialogService
-@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
 
 <div class="mb-16">
     <div class="d-flex align-center gap-4 mb-6">
@@ -85,16 +84,13 @@
     [Parameter] public string Title { get; set; } = "Resident Evil";
     [Parameter] public string PublisherLabel { get; set; } = "Capcom";
 
+    [Parameter] public int? NowPlayingGameId { get; set; }
+
     private List<GameEntry> _entries = [];
-    private int? _nowPlayingGameId;
 
     protected override async Task OnInitializedAsync()
     {
         _entries = await RoadmapService.GetByCategoryAsync(Category);
-
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
-        _nowPlayingGameId = np?.GameEntryId;
     }
 
     private async Task OnRowClicked(TableRowClickEventArgs<GameEntry> args)
@@ -141,7 +137,7 @@
         if (entry.StatusLabel == GameConstants.Status.Done || entry.IsCompleted) classes.Add("row-done");
         if (entry.StatusLabel == GameConstants.Status.Downloading) classes.Add("row-tonight");
         if (entry.StatusLabel == GameConstants.Status.Skip) classes.Add("row-skip");
-        if (entry.Id == _nowPlayingGameId) classes.Add("row-now-playing");
+        if (entry.Id == NowPlayingGameId) classes.Add("row-now-playing");
         if (IsNextUp(entry)) classes.Add("row-next-up");
 
         return string.Join(" ", classes);
@@ -155,7 +151,7 @@
         if (entry.StatusLabel == GameConstants.Status.Done || entry.IsCompleted) classes.Add("row-done");
         if (entry.StatusLabel == GameConstants.Status.Downloading) classes.Add("row-tonight");
         if (entry.StatusLabel == GameConstants.Status.Skip) classes.Add("row-skip");
-        if (entry.Id == _nowPlayingGameId) classes.Add("row-now-playing");
+        if (entry.Id == NowPlayingGameId) classes.Add("row-now-playing");
         if (IsNextUp(entry)) classes.Add("row-next-up");
 
         return string.Join(" ", classes);
@@ -168,7 +164,7 @@
 
     private string GetOrderBadgeClass(GameEntry entry)
     {
-        if (entry.Id == _nowPlayingGameId) return "now-playing";
+        if (entry.Id == NowPlayingGameId) return "now-playing";
         if (entry.StatusLabel == GameConstants.Status.Downloading) return "active-now";
         if (entry.StatusLabel == GameConstants.Status.Done) return "";
         if (IsNextUp(entry)) return "next-up";
