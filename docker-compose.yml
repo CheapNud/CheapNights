@@ -1,12 +1,11 @@
 services:
   horror-roadmap:
-    build: .
+    image: ghcr.io/cheapnud/cheapnights:latest
     container_name: horror-roadmap
     restart: unless-stopped
-    volumes:
-      - ./data:/app/data
     environment:
       - ASPNETCORE_URLS=http://+:5000
-      - ConnectionStrings__Default=Data Source=/app/data/horror.db
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Host=localhost;Database=cheapnights;Username=cheapnights;Password=${PG_PASSWORD}
     ports:
       - "5010:5000"

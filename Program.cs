@@ -13,7 +13,18 @@ builder.Services.AddRazorComponents()
 builder.Services.AddMudServices();
 
 builder.Services.AddDbContextFactory<HorrorDbContext>(opt =>
-    opt.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=horror.db"));
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        opt.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=horror.db");
+    }
+    else
+    {
+        var pgConnection = builder.Configuration.GetConnectionString("Default")
+            ?? throw new InvalidOperationException("PostgreSQL connection string 'Default' is required in production.");
+        opt.UseNpgsql(pgConnection);
+    }
+});
 
 builder.Services.AddScoped<GameEntryRepo>();
 builder.Services.AddScoped<SessionRepo>();
