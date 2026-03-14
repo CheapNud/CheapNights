@@ -7,10 +7,10 @@
 
 <!-- HEADER -->
 <div class="horror-header mb-20">
-    <MudText Typo="Typo.overline" Class="mb-4" Style="letter-spacing:8px;">Co-op Horror Playthrough · 2026</MudText>
-    <div class="horror-title mb-5">SURVIVAL HORROR<br />ROADMAP</div>
-    <MudText Typo="Typo.caption" Class="header-sub">A reverse journey through the classics</MudText>
-    <div class="header-line mt-7"><span>◈ TWO PLAYERS ◈</span></div>
+	<MudText Typo="Typo.overline" Class="mb-4" Style="letter-spacing:8px;">Co-op Horror Playthrough · 2026</MudText>
+	<div class="horror-title mb-5">SURVIVAL HORROR<br />ROADMAP</div>
+	<MudText Typo="Typo.caption" Class="header-sub">A reverse journey through the classics</MudText>
+	<div class="header-line mt-7"><span>◈ TWO PLAYERS ◈</span></div>
 </div>
 
 <!-- NOW PLAYING -->
@@ -25,45 +25,42 @@
 <!-- SILENT HILL -->
 <RoadmapTable CategoryId="2" Title="Silent Hill" PublisherLabel="Konami" NowPlayingGameId="_nowPlayingGameId" />
 
-@code {
-    private int? _nowPlayingGameId;
-
-    protected override async Task OnInitializedAsync()
-    {
-        NowPlayingService.OnChange += OnNowPlayingChanged;
-        await LoadNowPlaying();
-    }
-
-    private async void OnNowPlayingChanged()
-    {
-        await InvokeAsync(async () =>
-        {
-            await LoadNowPlaying();
-            StateHasChanged();
-        });
-    }
-
-    private async Task LoadNowPlaying()
-    {
-        var np = await NowPlayingRepo.GetCurrentAsync();
-        _nowPlayingGameId = np?.GameEntryId;
-    }
-
-    public void Dispose()
-    {
-        NowPlayingService.OnChange -= OnNowPlayingChanged;
-    }
-}
-
 <!-- LEGEND -->
 <div class="d-flex flex-wrap gap-4 mt-12 pt-6 border-t border-solid" style="border-color:var(--border)">
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--done-gold)"></div> <MudText Typo="Typo.caption">Finished / In Progress</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#3a86ff"></div> <MudText Typo="Typo.caption">Downloading / Tonight</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--re-red)"></div> <MudText Typo="Typo.caption">RE Essential</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--sh-teal)"></div> <MudText Typo="Typo.caption">SH Essential</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#888"></div> <MudText Typo="Typo.caption">Recommended</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--upcoming)"></div> <MudText Typo="Typo.caption">Upcoming / Rumored</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--skip-grey)"></div> <MudText Typo="Typo.caption">Skip</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--couch)"></div> <MudText Typo="Typo.caption">Couch Co-op</MudText></div>
-    <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#b8976a"></div> <MudText Typo="Typo.caption">Movie / Film</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--done-gold)"></div> <MudText Typo="Typo.caption">Finished / In Progress</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#3a86ff"></div> <MudText Typo="Typo.caption">Now Playing</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--re-red)"></div> <MudText Typo="Typo.caption">RE Essential</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--sh-teal)"></div> <MudText Typo="Typo.caption">SH Essential</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#888"></div> <MudText Typo="Typo.caption">Recommended</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--upcoming)"></div> <MudText Typo="Typo.caption">Upcoming / Rumored</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--skip-grey)"></div> <MudText Typo="Typo.caption">Skip</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--couch)"></div> <MudText Typo="Typo.caption">Couch Co-op</MudText></div>
+	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#b8976a"></div> <MudText Typo="Typo.caption">Movie / Film</MudText></div>
 </div>
+
+@code {
+	private int? _nowPlayingGameId;
+
+	protected override async Task OnInitializedAsync()
+	{
+		NowPlayingService.OnChange += OnNowPlayingChanged;
+		await LoadNowPlaying();
+	}
+
+	private async Task OnNowPlayingChanged()
+	{
+		await LoadNowPlaying();
+		StateHasChanged();
+	}
+
+	private async Task LoadNowPlaying()
+	{
+		var np = await NowPlayingRepo.GetCurrentAsync();
+		_nowPlayingGameId = np?.GameEntryId;
+	}
+
+	public void Dispose()
+	{
+		NowPlayingService.OnChange -= OnNowPlayingChanged;
+	}
+}

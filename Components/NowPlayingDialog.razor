@@ -48,14 +48,14 @@
     private async Task Save()
     {
         await NowPlayingRepo.SetCurrentAsync(_selectedGameId, _statusNote);
-        NowPlayingService.NotifyChanged();
+        await NowPlayingService.NotifyChangedAsync();
         MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task Clear()
     {
         await NowPlayingRepo.ClearAsync();
-        NowPlayingService.NotifyChanged();
+        await NowPlayingService.NotifyChangedAsync();
         MudDialog.Close(DialogResult.Ok(true));
     }
 

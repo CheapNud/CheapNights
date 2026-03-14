@@ -28,13 +28,10 @@
         await LoadNowPlaying();
     }
 
-    private async void OnNowPlayingChanged()
+    private async Task OnNowPlayingChanged()
     {
-        await InvokeAsync(async () =>
-        {
-            await LoadNowPlaying();
-            StateHasChanged();
-        });
+        await LoadNowPlaying();
+        StateHasChanged();
     }
 
     private async Task LoadNowPlaying()
