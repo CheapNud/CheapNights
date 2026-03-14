@@ -9,6 +9,15 @@ public class NowPlayingService
         if (OnChange is null) return;
 
         foreach (var handler in OnChange.GetInvocationList().Cast<Func<Task>>())
-            await handler();
+        {
+            try
+            {
+                await handler();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"NowPlayingService handler failed: {ex.Message}");
+            }
+        }
     }
 }

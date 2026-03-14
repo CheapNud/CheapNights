@@ -16,6 +16,10 @@ public class NowPlayingRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRe
             .FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
     }
 
+    /// <summary>
+    /// Sets the currently playing game. When switching to a different game,
+    /// the previous game is automatically marked as completed (IsCompleted + CompletedAt).
+    /// </summary>
     public async Task SetCurrentAsync(int? gameEntryId, string? statusNote)
     {
         using var db = _factory.CreateDbContext();
