@@ -131,6 +131,12 @@
         _entryTypes = await db.EntryTypes.OrderBy(e => e.SortOrder).AsNoTracking().ToListAsync();
         _platforms = await db.Platforms.OrderBy(p => p.SortOrder).AsNoTracking().ToListAsync();
 
+        Entry.Category = _categories.FirstOrDefault(c => c.Id == Entry.CategoryId);
+        Entry.EntryType = _entryTypes.FirstOrDefault(e => e.Id == Entry.EntryTypeId);
+        Entry.Status = _statuses.FirstOrDefault(s => s.Id == Entry.StatusId);
+        Entry.PlatformBrecht = _platforms.FirstOrDefault(p => p.Id == Entry.PlatformBrechtId);
+        Entry.PlatformPieter = _platforms.FirstOrDefault(p => p.Id == Entry.PlatformPieterId);
+
         _completedDate = Entry.CompletedAt;
         _loaded = true;
     }
