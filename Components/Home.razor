@@ -1,5 +1,7 @@
 @page "/"
+@implements IDisposable
 @inject NowPlayingRepo NowPlayingRepo
+@inject NowPlayingService NowPlayingService
 
 <PageTitle>Horror Roadmap</PageTitle>
 
@@ -28,8 +30,28 @@
 
     protected override async Task OnInitializedAsync()
     {
+        NowPlayingService.OnChange += OnNowPlayingChanged;
+        await LoadNowPlaying();
+    }
+
+    private async void OnNowPlayingChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadNowPlaying();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadNowPlaying()
+    {
         var np = await NowPlayingRepo.GetCurrentAsync();
         _nowPlayingGameId = np?.GameEntryId;
+    }
+
+    public void Dispose()
+    {
+        NowPlayingService.OnChange -= OnNowPlayingChanged;
     }
 }
 

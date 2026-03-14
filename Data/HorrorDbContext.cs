@@ -49,8 +49,8 @@ public class HorrorDbContext(DbContextOptions<HorrorDbContext> options) : DbCont
             new Status { Id = 1, Name = "Essential", ChipColor = "#e05a4a", ChipBackground = "rgba(192,57,43,0.1)", StripeColor = "var(--re-red)", SortOrder = 0 },
             new Status { Id = 2, Name = "Recommended", ChipColor = "#888", ChipBackground = "rgba(150,150,150,0.08)", StripeColor = "#888", SortOrder = 1 },
             new Status { Id = 3, Name = "Optional", ChipColor = "#666", ChipBackground = "rgba(110,110,110,0.07)", StripeColor = null, SortOrder = 2 },
-            new Status { Id = 4, Name = "Skip", ChipColor = "#444", ChipBackground = null, StripeColor = "var(--skip-grey)", IsSelectable = false, SortOrder = 3 },
-            new Status { Id = 5, Name = "Upcoming", ChipColor = "#a98be8", ChipBackground = "rgba(124,92,191,0.1)", StripeColor = "var(--upcoming)", IsSelectable = false, SortOrder = 4 }
+            new Status { Id = 4, Name = "Skip", ChipColor = "#444", ChipBackground = null, StripeColor = "var(--skip-grey)", SortOrder = 3 },
+            new Status { Id = 5, Name = "Upcoming", ChipColor = "#a98be8", ChipBackground = "rgba(124,92,191,0.1)", StripeColor = "var(--upcoming)", SortOrder = 4 }
         );
 
         // ═══════════════════════════════════════

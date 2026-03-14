@@ -49,7 +49,7 @@
                 @if (context.Status is not null)
                 {
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Label="true"
-                             Style="@GetStatusChipStyle(context.Status)">
+                             Style="@GetStatusChipStyle(context)">
                         @context.Status.Name
                     </MudChip>
                 }
@@ -118,28 +118,27 @@
 
     private string GetFirstCellClasses(GameEntry entry)
     {
-        if (entry.IsMovie) return "movie-row";
+        var classes = new List<string> { entry.IsMovie ? "movie-row" : "game-row" };
 
-        var classes = new List<string> { "game-row" };
-
-        if (entry.Status?.StripeColor is not null)
+        var statusName = StatusName(entry);
+        var stripeClass = statusName switch
         {
-            var stripeVar = _categoryCode == "SH" && StatusName(entry) == "Essential"
-                ? "stripe-essential-sh"
-                : $"stripe-{StatusName(entry).ToLower()}";
-            classes.Add(stripeVar);
-        }
+            "Essential" => _categoryCode == "SH" ? "stripe-essential-sh" : "stripe-essential-re",
+            "Recommended" => "stripe-recommended",
+            "Skip" => "stripe-skip",
+            "Upcoming" => "stripe-upcoming",
+            _ => ""
+        };
+        if (!string.IsNullOrEmpty(stripeClass)) classes.Add(stripeClass);
 
-        AddRowStateClasses(entry, classes);
+        if (!entry.IsMovie) AddRowStateClasses(entry, classes);
         return string.Join(" ", classes);
     }
 
     private string GetCellClasses(GameEntry entry)
     {
-        if (entry.IsMovie) return "movie-row";
-
-        var classes = new List<string> { "game-row" };
-        AddRowStateClasses(entry, classes);
+        var classes = new List<string> { entry.IsMovie ? "movie-row" : "game-row" };
+        if (!entry.IsMovie) AddRowStateClasses(entry, classes);
         return string.Join(" ", classes);
     }
 
@@ -159,14 +158,25 @@
     private string GetOrderBadgeClass(GameEntry entry)
     {
         if (entry.Id == NowPlayingGameId) return "now-playing";
+        if (entry.IsCompleted) return "completed";
         if (IsNextUp(entry)) return "next-up";
         return "";
     }
 
-    private static string GetStatusChipStyle(Status status)
+    private string GetStatusChipStyle(GameEntry entry)
     {
+        var status = entry.Status;
+        if (status is null) return "";
+
         var chipColor = status.ChipColor ?? "#888";
         var chipBg = status.ChipBackground ?? "transparent";
+
+        if (status.Name == "Essential" && _categoryCode == "SH")
+        {
+            chipColor = "#4cc8be";
+            chipBg = "rgba(42,157,143,0.1)";
+        }
+
         return $"border-color:{chipColor}40; color:{chipColor}; background:{chipBg};";
     }
 

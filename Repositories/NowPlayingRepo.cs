@@ -22,6 +22,16 @@ public class NowPlayingRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRe
         var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
         if (np is null) return;
 
+        if (np.GameEntryId is not null && np.GameEntryId != gameEntryId)
+        {
+            var previousGame = await db.GameEntries.FindAsync(np.GameEntryId);
+            if (previousGame is not null && !previousGame.IsCompleted)
+            {
+                previousGame.IsCompleted = true;
+                previousGame.CompletedAt = DateTime.UtcNow;
+            }
+        }
+
         np.GameEntryId = gameEntryId;
         np.StatusNote = statusNote;
         np.UpdatedAt = DateTime.UtcNow;
