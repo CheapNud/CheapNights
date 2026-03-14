@@ -80,7 +80,7 @@
 </div>
 
 @code {
-    [Parameter] public string Category { get; set; } = "RE";
+    [Parameter] public string Category { get; set; } = GameConstants.Categories.ResidentEvil;
     [Parameter] public string Title { get; set; } = "Resident Evil";
     [Parameter] public string PublisherLabel { get; set; } = "Capcom";
 
@@ -122,19 +122,19 @@
 
         var stripeClass = entry.StatusLabel switch
         {
-            "Done" => "stripe-done",
-            "Essential" => Category == "SH" ? "stripe-essential-sh" : "stripe-essential-re",
-            "Downloading" => "stripe-downloading",
-            "Skip" => "stripe-skip",
-            "Upcoming" => "stripe-upcoming",
-            "Recommended" => "stripe-recommended",
+            GameConstants.Status.Done => "stripe-done",
+            GameConstants.Status.Essential => Category == GameConstants.Categories.SilentHill ? "stripe-essential-sh" : "stripe-essential-re",
+            GameConstants.Status.Downloading => "stripe-downloading",
+            GameConstants.Status.Skip => "stripe-skip",
+            GameConstants.Status.Upcoming => "stripe-upcoming",
+            GameConstants.Status.Recommended => "stripe-recommended",
             _ => ""
         };
         if (!string.IsNullOrEmpty(stripeClass)) classes.Add(stripeClass);
 
-        if (entry.StatusLabel == "Done" || entry.IsCompleted) classes.Add("row-done");
-        if (entry.StatusLabel == "Downloading") classes.Add("row-tonight");
-        if (entry.StatusLabel == "Skip") classes.Add("row-skip");
+        if (entry.StatusLabel == GameConstants.Status.Done || entry.IsCompleted) classes.Add("row-done");
+        if (entry.StatusLabel == GameConstants.Status.Downloading) classes.Add("row-tonight");
+        if (entry.StatusLabel == GameConstants.Status.Skip) classes.Add("row-skip");
 
         return string.Join(" ", classes);
     }
@@ -144,59 +144,59 @@
         if (entry.IsMovie) return "movie-row";
 
         var classes = new List<string> { "game-row" };
-        if (entry.StatusLabel == "Done" || entry.IsCompleted) classes.Add("row-done");
-        if (entry.StatusLabel == "Downloading") classes.Add("row-tonight");
-        if (entry.StatusLabel == "Skip") classes.Add("row-skip");
+        if (entry.StatusLabel == GameConstants.Status.Done || entry.IsCompleted) classes.Add("row-done");
+        if (entry.StatusLabel == GameConstants.Status.Downloading) classes.Add("row-tonight");
+        if (entry.StatusLabel == GameConstants.Status.Skip) classes.Add("row-skip");
 
         return string.Join(" ", classes);
     }
 
     private string GetOrderBadgeClass(GameEntry entry) => entry.StatusLabel switch
     {
-        "Downloading" => "active-now",
-        "Done" => "",
-        _ when entry.SortLabel == "2" && Category == "RE" => "next-up",
-        _ when entry.SortLabel == "0" && Category == "SH" => "next-up",
+        GameConstants.Status.Downloading => "active-now",
+        GameConstants.Status.Done => "",
+        _ when entry.SortLabel == "2" && Category == GameConstants.Categories.ResidentEvil => "next-up",
+        _ when entry.SortLabel == "0" && Category == GameConstants.Categories.SilentHill => "next-up",
         _ => ""
     };
 
     private string GetStatusChipStyle(GameEntry entry) => entry.StatusLabel switch
     {
-        "Done" => "border-color:rgba(244,162,97,0.4); color:#f4a261; background:rgba(244,162,97,0.1);",
-        "Essential" when Category == "SH" => "border-color:rgba(42,157,143,0.4); color:#4cc8be; background:rgba(42,157,143,0.1);",
-        "Essential" => "border-color:rgba(192,57,43,0.4); color:#e05a4a; background:rgba(192,57,43,0.1);",
-        "Downloading" => "border-color:rgba(58,134,255,0.5); color:#3a86ff; background:rgba(58,134,255,0.1); animation:blink 1.4s ease-in-out infinite;",
-        "Skip" => "border-color:#444; color:#444;",
-        "Upcoming" => "border-color:rgba(124,92,191,0.4); color:#a98be8; background:rgba(124,92,191,0.1);",
-        "Recommended" => "border-color:rgba(150,150,150,0.25); color:#888; background:rgba(150,150,150,0.08);",
-        "Canon" => "border-color:rgba(184,151,106,0.28); color:#b8976a; background:rgba(184,151,106,0.07);",
-        "Plex" => "border-color:rgba(229,160,13,0.35); color:#e5a00d; background:rgba(229,160,13,0.1);",
-        "Optional" => "border-color:rgba(110,110,110,0.25); color:#666; background:rgba(110,110,110,0.07);",
+        GameConstants.Status.Done => "border-color:rgba(244,162,97,0.4); color:#f4a261; background:rgba(244,162,97,0.1);",
+        GameConstants.Status.Essential when Category == GameConstants.Categories.SilentHill => "border-color:rgba(42,157,143,0.4); color:#4cc8be; background:rgba(42,157,143,0.1);",
+        GameConstants.Status.Essential => "border-color:rgba(192,57,43,0.4); color:#e05a4a; background:rgba(192,57,43,0.1);",
+        GameConstants.Status.Downloading => "border-color:rgba(58,134,255,0.5); color:#3a86ff; background:rgba(58,134,255,0.1); animation:blink 1.4s ease-in-out infinite;",
+        GameConstants.Status.Skip => "border-color:#444; color:#444;",
+        GameConstants.Status.Upcoming => "border-color:rgba(124,92,191,0.4); color:#a98be8; background:rgba(124,92,191,0.1);",
+        GameConstants.Status.Recommended => "border-color:rgba(150,150,150,0.25); color:#888; background:rgba(150,150,150,0.08);",
+        GameConstants.Status.Canon => "border-color:rgba(184,151,106,0.28); color:#b8976a; background:rgba(184,151,106,0.07);",
+        GameConstants.Status.Plex => "border-color:rgba(229,160,13,0.35); color:#e5a00d; background:rgba(229,160,13,0.1);",
+        GameConstants.Status.Optional => "border-color:rgba(110,110,110,0.25); color:#666; background:rgba(110,110,110,0.07);",
         _ => ""
     };
 
     private string GetStatusText(GameEntry entry) => entry.StatusLabel switch
     {
-        "Done" => "✓ Done",
-        "Essential" when Category == "SH" && entry.Name.Contains("SHORT MESSAGE") => "⭐ Free!",
-        "Essential" when entry.Name.Contains("SEPARATE WAYS") => "⭐ Do Not Skip",
-        "Essential" when Category == "SH" && entry.SortLabel == "1" => "⭐ Start Here",
-        "Essential" => "⭐ Essential",
-        "Downloading" => "⬇ Downloading",
-        "Skip" => "⚠ Skip",
-        "Upcoming" => $"🔜 {entry.StoryEra}",
-        "Recommended" when entry.SortLabel?.Contains('b') == true => "Optional+",
-        "Recommended" => "Recommended",
-        "Canon" => "🎬 Canon",
-        "Plex" => "🟡 On Plex",
-        "Optional" => "Optional",
+        GameConstants.Status.Done => "✓ Done",
+        GameConstants.Status.Essential when Category == GameConstants.Categories.SilentHill && entry.Name.Contains("SHORT MESSAGE") => "⭐ Free!",
+        GameConstants.Status.Essential when entry.Name.Contains("SEPARATE WAYS") => "⭐ Do Not Skip",
+        GameConstants.Status.Essential when Category == GameConstants.Categories.SilentHill && entry.SortLabel == "1" => "⭐ Start Here",
+        GameConstants.Status.Essential => "⭐ Essential",
+        GameConstants.Status.Downloading => "⬇ Downloading",
+        GameConstants.Status.Skip => "⚠ Skip",
+        GameConstants.Status.Upcoming => $"🔜 {entry.StoryEra}",
+        GameConstants.Status.Recommended when entry.SortLabel?.Contains('b') == true => "Optional+",
+        GameConstants.Status.Recommended => "Recommended",
+        GameConstants.Status.Canon => "🎬 Canon",
+        GameConstants.Status.Plex => "🟡 On Plex",
+        GameConstants.Status.Optional => "Optional",
         _ => entry.StatusLabel ?? ""
     };
 
     private string GetNoteClass(GameEntry entry) => entry.StatusLabel switch
     {
-        "Done" => "hot",
-        "Downloading" => "active",
+        GameConstants.Status.Done => "hot",
+        GameConstants.Status.Downloading => "active",
         _ => ""
     };
 
@@ -214,7 +214,7 @@
         {
             builder.OpenElement(seq++, "span");
             builder.AddAttribute(seq++, "class", "platform-you");
-            builder.AddContent(seq++, $"Brecht: {entry.PlatformBrecht}");
+            builder.AddContent(seq++, $"{GameConstants.Players.Brecht}: {entry.PlatformBrecht}");
             builder.CloseElement();
         }
         if (!string.IsNullOrEmpty(entry.PlatformPieter))
@@ -226,19 +226,19 @@
             }
             builder.OpenElement(seq++, "span");
             builder.AddAttribute(seq++, "class", "platform-friend");
-            builder.AddContent(seq++, $"Pieter: {entry.PlatformPieter}");
+            builder.AddContent(seq++, $"{GameConstants.Players.Pieter}: {entry.PlatformPieter}");
             builder.CloseElement();
         }
-        if (entry.StatusLabel == "Skip" && entry.PlatformBrecht?.Contains("Steam") == true)
+        if (entry.StatusLabel == GameConstants.Status.Skip && entry.PlatformBrecht?.Contains(GameConstants.Platforms.Steam) == true)
         {
             builder.OpenElement(seq++, "span");
             builder.AddAttribute(seq++, "class", "platform-dead");
-            builder.AddContent(seq++, $"Brecht: {entry.PlatformBrecht}");
+            builder.AddContent(seq++, $"{GameConstants.Players.Brecht}: {entry.PlatformBrecht}");
             builder.CloseElement();
         }
         if (string.IsNullOrEmpty(entry.PlatformBrecht) && string.IsNullOrEmpty(entry.PlatformPieter))
         {
-            if (entry.StatusLabel is "Recommended" or "Essential" && entry.Name.Contains("Buy", StringComparison.OrdinalIgnoreCase) is false)
+            if (entry.StatusLabel is GameConstants.Status.Recommended or GameConstants.Status.Essential && entry.Name.Contains("Buy", StringComparison.OrdinalIgnoreCase) is false)
             {
                 builder.OpenElement(seq++, "span");
                 builder.AddAttribute(seq++, "class", "platform-buy");

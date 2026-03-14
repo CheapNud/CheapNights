@@ -6,7 +6,7 @@
         <MudTimePicker Label="Time" @bind-Time="_selectedTime" Variant="Variant.Outlined" />
 
         <MudSelect T="int?" Label="Game / Film" @bind-Value="_selectedGameId" Variant="Variant.Outlined" Class="mt-3">
-            <MudSelectItem T="int?" Value="@((int?)null)">🍕 Game Night (TBD)</MudSelectItem>
+            <MudSelectItem T="int?" Value="@((int?)null)">🍕 @GameConstants.Defaults.DefaultCustomGame</MudSelectItem>
             @foreach (var game in _games)
             {
                 <MudSelectItem T="int?" Value="@((int?)game.Id)">
@@ -17,8 +17,8 @@
 
         <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
         <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
-            <MudToggleItem T="string" Value="@("brecht")">🏠 Brecht's place</MudToggleItem>
-            <MudToggleItem T="string" Value="@("pieter")">🏠 Pieter's place</MudToggleItem>
+            <MudToggleItem T="string" Value="@(GameConstants.Players.BrechtKey)">🏠 @(GameConstants.Players.Brecht)'s place</MudToggleItem>
+            <MudToggleItem T="string" Value="@(GameConstants.Players.PieterKey)">🏠 @(GameConstants.Players.Pieter)'s place</MudToggleItem>
         </MudToggleGroup>
 
         <MudTextField T="string" Label="Notes" @bind-Value="_notes" Lines="3"
@@ -43,8 +43,8 @@
 
     private List<GameEntry> _games = [];
     private int? _selectedGameId;
-    private TimeSpan? _selectedTime = new(20, 0, 0);
-    private string _location = "brecht";
+    private TimeSpan? _selectedTime = GameConstants.Defaults.DefaultSessionTime;
+    private string _location = GameConstants.Players.BrechtKey;
     private string _notes = "";
     private PlannedSession? _existingSession;
 
@@ -52,7 +52,7 @@
     {
         await using var db = await DbFactory.CreateDbContextAsync();
         _games = await db.GameEntries
-            .Where(g => g.StatusLabel != "Skip" && g.StatusLabel != "Upcoming")
+            .Where(g => !GameConstants.Status.ExcludedFromSelection.Contains(g.StatusLabel))
             .OrderBy(g => g.SortOrder)
             .ToListAsync();
 
@@ -68,21 +68,21 @@
         else
         {
             // Default to current NowPlaying game
-            var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == 1);
+            var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
             _selectedGameId = np?.GameEntryId;
         }
     }
 
     private async Task Save()
     {
-        var scheduledAt = SelectedDate.Date + (_selectedTime ?? new TimeSpan(20, 0, 0));
+        var scheduledAt = SelectedDate.Date + (_selectedTime ?? GameConstants.Defaults.DefaultSessionTime);
         var session = _existingSession ?? new PlannedSession { Location = _location };
 
         session.ScheduledAt = scheduledAt;
         session.GameEntryId = _selectedGameId;
         session.Location = _location;
         session.Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes;
-        session.CustomGame = _selectedGameId is null ? "Game Night (TBD)" : null;
+        session.CustomGame = _selectedGameId is null ? GameConstants.Defaults.DefaultCustomGame : null;
 
         await SessionService.SaveSessionAsync(session);
         MudDialog.Close(DialogResult.Ok(true));

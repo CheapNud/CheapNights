@@ -52,7 +52,7 @@
         @foreach (var session in _upcoming)
         {
             var locClass = $"loc-{session.Location}";
-            var locLabel = session.Location == "brecht" ? "Brecht's" : session.Location == "pieter" ? "Pieter's" : "?";
+            var locLabel = session.Location == GameConstants.Players.BrechtKey ? $"{GameConstants.Players.Brecht}'s" : session.Location == GameConstants.Players.PieterKey ? $"{GameConstants.Players.Pieter}'s" : "?";
             <div class="upcoming-item cursor-pointer" @onclick="@(() => OpenSessionModal(session.ScheduledAt.Day))">
                 <MudText Typo="Typo.caption" Class="mud-text-secondary" Style="min-width:90px;">
                     @session.ScheduledAt.ToString("dd/MM/yyyy")
@@ -87,7 +87,7 @@
     private async Task LoadMonth()
     {
         _monthSessions = await SessionService.GetSessionsForMonthAsync(_currentDate.Year, _currentDate.Month);
-        _upcoming = await SessionService.GetUpcomingAsync(8);
+        _upcoming = await SessionService.GetUpcomingAsync(GameConstants.Defaults.UpcomingSessionCount);
         BuildCalendar();
     }
 

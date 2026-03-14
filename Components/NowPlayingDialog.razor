@@ -36,11 +36,11 @@
     {
         await using var db = await DbFactory.CreateDbContextAsync();
         _games = await db.GameEntries
-            .Where(g => g.StatusLabel != "Skip" && g.StatusLabel != "Upcoming")
+            .Where(g => !GameConstants.Status.ExcludedFromSelection.Contains(g.StatusLabel))
             .OrderBy(g => g.SortOrder)
             .ToListAsync();
 
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == 1);
+        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
         if (np is not null)
         {
             _selectedGameId = np.GameEntryId;
@@ -51,7 +51,7 @@
     private async Task Save()
     {
         await using var db = await DbFactory.CreateDbContextAsync();
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == 1);
+        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
         if (np is not null)
         {
             np.GameEntryId = _selectedGameId;
@@ -66,7 +66,7 @@
     private async Task Clear()
     {
         await using var db = await DbFactory.CreateDbContextAsync();
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == 1);
+        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
         if (np is not null)
         {
             np.GameEntryId = null;

@@ -14,15 +14,15 @@
             </MudItem>
             <MudItem xs="6" sm="3">
                 <MudSelect T="string" Label="Category" @bind-Value="Entry.Category" Variant="Variant.Outlined">
-                    <MudSelectItem T="string" Value="@("RE")">Resident Evil</MudSelectItem>
-                    <MudSelectItem T="string" Value="@("SH")">Silent Hill</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(GameConstants.Categories.ResidentEvil)">Resident Evil</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(GameConstants.Categories.SilentHill)">Silent Hill</MudSelectItem>
                 </MudSelect>
             </MudItem>
             <MudItem xs="6" sm="3">
                 <MudSelect T="string" Label="Type" @bind-Value="Entry.EntryType" Variant="Variant.Outlined">
-                    <MudSelectItem T="string" Value="@("Game")">Game</MudSelectItem>
-                    <MudSelectItem T="string" Value="@("Movie")">Movie</MudSelectItem>
-                    <MudSelectItem T="string" Value="@("DLC")">DLC</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(GameConstants.EntryTypes.Game)">Game</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(GameConstants.EntryTypes.Movie)">Movie</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(GameConstants.EntryTypes.DLC)">DLC</MudSelectItem>
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6">
@@ -112,11 +112,7 @@
 
     private DateTime? _completedDate;
 
-    private readonly string[] _statusOptions =
-    [
-        "Essential", "Recommended", "Done", "Downloading", "Skip", "Upcoming",
-        "Canon", "Plex", "Optional"
-    ];
+    private readonly string[] _statusOptions = GameConstants.Status.All;
 
     protected override void OnParametersSet()
     {
