@@ -327,6 +327,34 @@ body::after {
 @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 6px rgba(244,162,97,0.3); } 50% { box-shadow: 0 0 14px rgba(244,162,97,0.7); } }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+/* ─── LOGIN ─── */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+.login-card {
+    max-width: 380px;
+    width: 100%;
+    padding: 48px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+.login-title {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 8px;
+}
+.plex-button {
+    background: #e5a00d !important;
+    color: #000 !important;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
 /* ─── MudBlazor overrides ─── */
 .mud-table-root { background: transparent !important; }
 .mud-table-head .mud-table-cell {

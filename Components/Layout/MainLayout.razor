@@ -6,6 +6,19 @@
 <MudSnackbarProvider />
 
 <div class="horror-app">
+    <AuthorizeView>
+        <Authorized>
+            <div class="d-flex justify-end mb-2">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Style="color:#666;">
+                    @context.User.Identity?.Name
+                </MudChip>
+                <MudButton Href="/auth/logout" Variant="Variant.Text" Size="Size.Small"
+                           Style="color:#444; text-transform:none;">
+                    Logout
+                </MudButton>
+            </div>
+        </Authorized>
+    </AuthorizeView>
     @Body
 </div>
 

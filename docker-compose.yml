@@ -7,5 +7,6 @@ services:
       - ASPNETCORE_URLS=http://+:5000
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__Default=Host=192.168.1.14;Port=5432;Database=cheapnights;Username=cheapnights;Password=${PG_PASSWORD}
+      - Plex__AdminToken=${PLEX_ADMIN_TOKEN}
     ports:
       - "5010:5000"

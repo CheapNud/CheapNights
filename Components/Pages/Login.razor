@@ -1,0 +1,24 @@
+@page "/login"
+@attribute [AllowAnonymous]
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="horror-title login-title">CHEAPNIGHTS</div>
+        <MudText Typo="Typo.caption" Class="header-sub mb-8" Style="text-align:center;">Horror Roadmap · Co-op Planner</MudText>
+
+        <MudButton Href="/auth/plex-start" Variant="Variant.Filled" Color="Color.Warning"
+                   FullWidth="true" Size="Size.Large" Class="plex-button">
+            Sign in with Plex
+        </MudButton>
+
+        @if (Error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@Error</MudAlert>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+}

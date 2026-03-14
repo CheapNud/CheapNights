@@ -1,7 +1,9 @@
 using CheapNights.Components;
 using CheapNights.Data;
+using CheapNights.Endpoints;
 using CheapNights.Repositories;
 using CheapNights.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -11,6 +13,18 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddMudServices();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opt =>
+    {
+        opt.LoginPath = "/login";
+        opt.ExpireTimeSpan = TimeSpan.FromDays(30);
+        opt.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddHttpClient();
 
 builder.Services.AddDbContextFactory<HorrorDbContext>(opt =>
 {
@@ -33,6 +47,7 @@ builder.Services.AddScoped<StatusRepo>();
 builder.Services.AddScoped<RoadmapService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddSingleton<NowPlayingService>();
+builder.Services.AddScoped<PlexAuthService>();
 
 var app = builder.Build();
 
@@ -49,8 +64,11 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
+app.MapAuthEndpoints();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
