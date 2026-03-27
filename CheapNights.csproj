@@ -9,15 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CheapHelpers.Blazor" Version="3.1.1" />
-    <PackageReference Include="CheapHelpers.EF" Version="2.1.0" />
-    <PackageReference Include="CheapHelpers.Models" Version="2.0.1" />
+    <PackageReference Include="CheapHelpers.Blazor" Version="3.2.0" />
+    <PackageReference Include="CheapHelpers.EF" Version="3.2.0" />
+    <PackageReference Include="CheapHelpers.Models" Version="3.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
-    <PackageReference Include="MudBlazor" Version="9.1.0" />
+    <PackageReference Include="MudBlazor" Version="9.2.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
