@@ -20,6 +20,8 @@
   - New items go at the TOP of their category
   - Do not create separate TODO_*.md files — everything goes here
   - Keep it terse. If it needs more than 3 sub-bullets, link to a plan document.
+  - Do NOT create, rename, or remove categories — the fixed set is: Blocking, Planned, Future, Done
+  - When asked for planned work or TODO analysis, ALWAYS include Future items too — list them below Planned and note them as future work
 -->
 
 # TODO

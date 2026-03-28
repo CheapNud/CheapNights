@@ -272,6 +272,8 @@ body::after {
 .cal-labels > div { text-align: center; font-size: 11px; letter-spacing: 2px; color: var(--text-dim); padding: 4px 0 8px; text-transform: uppercase; }
 .cal-day {
     min-height: 72px;
+    min-width: 0;
+    overflow: hidden;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 2px;
@@ -374,7 +376,19 @@ body::after {
 .mud-dialog { background: #0f0f0f !important; border: 1px solid #2a2a2a !important; }
 
 /* ─── RESPONSIVE ─── */
-@media (max-width: 700px) { .horror-app { padding: 32px 12px 60px; } }
+@media (max-width: 700px) {
+    .horror-app { padding: 32px 12px 60px; }
+
+    /* Calendar: compact cells on mobile */
+    .cal-grid { gap: 2px; }
+    .cal-day { min-height: 52px; padding: 4px; }
+    .cal-day-num { font-size: 11px; margin-bottom: 2px; }
+    .cal-session-dot { font-size: 8px; padding: 1px 3px; }
+    .cal-labels > div { font-size: 9px; letter-spacing: 1px; padding: 2px 0 4px; }
+
+    /* Upcoming sessions: stack on narrow screens */
+    .upcoming-item { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+}
 
 /* Blazor error boundary */
 .blazor-error-boundary { background: #b32121; padding: 1rem; color: white; }
