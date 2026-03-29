@@ -1,6 +1,7 @@
 @implements IDisposable
 @inject NowPlayingRepo NowPlayingRepo
 @inject NowPlayingService NowPlayingService
+@inject ActiveGroupService ActiveGroupService
 @inject IDialogService DialogService
 
 <div class="now-playing-bar d-flex align-center gap-4 rounded-sm pa-4 mb-12">
@@ -25,7 +26,14 @@
     protected override async Task OnInitializedAsync()
     {
         NowPlayingService.OnChange += OnNowPlayingChanged;
+        ActiveGroupService.OnGroupChanged += OnGroupChanged;
         await LoadNowPlaying();
+    }
+
+    private async Task OnGroupChanged()
+    {
+        await LoadNowPlaying();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnNowPlayingChanged()
@@ -36,7 +44,8 @@
 
     private async Task LoadNowPlaying()
     {
-        var np = await NowPlayingRepo.GetCurrentAsync();
+        if (ActiveGroupService.GroupId == 0) return;
+        var np = await NowPlayingRepo.GetCurrentAsync(ActiveGroupService.GroupId);
 
         if (np?.GameEntry is not null)
         {
@@ -59,5 +68,6 @@
     public void Dispose()
     {
         NowPlayingService.OnChange -= OnNowPlayingChanged;
+        ActiveGroupService.OnGroupChanged -= OnGroupChanged;
     }
 }

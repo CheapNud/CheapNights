@@ -2,14 +2,6 @@ namespace CheapNights.Helpers;
 
 public static class GameConstants
 {
-    public static class Players
-    {
-        public const string Brecht = "Brecht";
-        public const string Pieter = "Pieter";
-        public const string BrechtKey = "brecht";
-        public const string PieterKey = "pieter";
-    }
-
     public static class ProgressNotes
     {
         public const string JustStarted = "Just Started";
@@ -30,7 +22,6 @@ public static class GameConstants
 
     public static class Defaults
     {
-        public const int NowPlayingId = 1;
         public const int UpcomingSessionCount = 8;
         public const string DefaultCustomGame = "Game Night (TBD)";
         public static readonly TimeSpan DefaultSessionTime = new(20, 0, 0);

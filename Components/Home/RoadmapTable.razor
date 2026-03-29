@@ -1,5 +1,6 @@
 @inject RoadmapService RoadmapService
 @inject IDialogService DialogService
+@inject ActiveGroupService ActiveGroupService
 
 <div class="mb-16">
     <div class="d-flex align-center gap-4 mb-6">
@@ -75,7 +76,7 @@
             <MudTd Class="@GetCellClasses(context)">
                 @if (context.IsMovie)
                 {
-                    <span style="color:#555">@GetPlatformDisplay(context)</span>
+                    <span style="color:#555">@GetMoviePlatformDisplay(context)</span>
                 }
                 else
                 {
@@ -97,7 +98,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _entries = await RoadmapService.GetByCategoryAsync(CategoryId);
+        _entries = await RoadmapService.GetByCategoryAsync(CategoryId, ActiveGroupService.GroupId);
         _categoryCode = _entries.FirstOrDefault()?.Category?.Code;
     }
 
@@ -113,7 +114,7 @@
 
         if (dialogResult is not null && !dialogResult.Canceled)
         {
-            _entries = await RoadmapService.GetByCategoryAsync(CategoryId);
+            _entries = await RoadmapService.GetByCategoryAsync(CategoryId, ActiveGroupService.GroupId);
             StateHasChanged();
         }
     }
@@ -184,36 +185,43 @@
         return $"border-color:{chipColor}40; color:{chipColor}; background:{chipBg};";
     }
 
-    private static string GetPlatformDisplay(GameEntry entry)
+    private static string GetMoviePlatformDisplay(GameEntry entry)
     {
-        if (entry.PlatformPieter is not null) return entry.PlatformPieter.Name;
-        if (entry.PlatformBrecht is not null) return entry.PlatformBrecht.Name;
-        return "Streaming";
+        var firstPlatform = entry.MemberPlatforms.FirstOrDefault()?.Platform;
+        return firstPlatform?.Name ?? "Streaming";
     }
 
     private RenderFragment GetPlatformMarkup(GameEntry entry) => builder =>
     {
         var seq = 0;
-        if (entry.PlatformBrecht is not null)
+        var members = ActiveGroupService.Members;
+        var hasPlatforms = false;
+
+        foreach (var member in members)
         {
-            builder.OpenElement(seq++, "span");
-            builder.AddAttribute(seq++, "class", "platform-you");
-            builder.AddContent(seq++, $"{GameConstants.Players.Brecht}: {entry.PlatformBrecht.Name}");
-            builder.CloseElement();
-        }
-        if (entry.PlatformPieter is not null)
-        {
-            if (entry.PlatformBrecht is not null)
+            var memberPlatform = entry.MemberPlatforms
+                .FirstOrDefault(mp => mp.GroupMemberId == member.Id);
+
+            if (memberPlatform?.Platform is not null)
             {
-                builder.OpenElement(seq++, "br");
+                if (hasPlatforms)
+                {
+                    builder.OpenElement(seq++, "br");
+                    builder.CloseElement();
+                }
+
+                var cssClass = members.IndexOf(member) == 0 ? "platform-you" : "platform-friend";
+                var displayName = member.AppUser?.DisplayName ?? member.Nickname ?? "?";
+
+                builder.OpenElement(seq++, "span");
+                builder.AddAttribute(seq++, "class", cssClass);
+                builder.AddContent(seq++, $"{displayName}: {memberPlatform.Platform.Name}");
                 builder.CloseElement();
+                hasPlatforms = true;
             }
-            builder.OpenElement(seq++, "span");
-            builder.AddAttribute(seq++, "class", "platform-friend");
-            builder.AddContent(seq++, $"{GameConstants.Players.Pieter}: {entry.PlatformPieter.Name}");
-            builder.CloseElement();
         }
-        if (entry.PlatformBrecht is null && entry.PlatformPieter is null)
+
+        if (!hasPlatforms)
         {
             if (StatusName(entry) is "Recommended" or "Essential")
             {
@@ -227,6 +235,7 @@
                 builder.AddContent(seq++, "—");
             }
         }
+
         if (entry.IsCouchCoop)
         {
             builder.OpenElement(seq++, "br");

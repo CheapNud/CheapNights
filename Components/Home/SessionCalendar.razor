@@ -2,6 +2,7 @@
 @inject SessionService SessionService
 @inject NowPlayingRepo NowPlayingRepo
 @inject NowPlayingService NowPlayingService
+@inject ActiveGroupService ActiveGroupService
 @inject IDialogService DialogService
 
 <MudText Typo="Typo.h5" Class="gradient-title mb-6 mt-6">SESSION PLANNER</MudText>
@@ -37,7 +38,8 @@
                 <div class="cal-day-num">@day</div>
                 @if (cell.Session is not null)
                 {
-                    var locClass = $"loc-{cell.Session.Location}";
+                    var hostName = GetHostNickname(cell.Session);
+                    var locClass = $"loc-{hostName}";
                     var gameName = cell.Session.UseCurrentGame ? (_nowPlayingName ?? "Now Playing") : (cell.Session.GameEntry?.Name ?? cell.Session.CustomGame ?? "TBD");
                     var timeStr = cell.Session.ScheduledAt.ToString("HH:mm");
                     <span class="cal-session-dot @locClass">@timeStr @gameName</span>
@@ -54,8 +56,9 @@
         <MudText Typo="Typo.overline" Class="mb-4" Style="letter-spacing:3px;">Upcoming Sessions</MudText>
         @foreach (var session in _upcoming)
         {
-            var locClass = $"loc-{session.Location}";
-            var locLabel = session.Location == GameConstants.Players.BrechtKey ? $"{GameConstants.Players.Brecht}'s" : session.Location == GameConstants.Players.PieterKey ? $"{GameConstants.Players.Pieter}'s" : "?";
+            var hostName = GetHostNickname(session);
+            var locClass = $"loc-{hostName}";
+            var locLabel = GetHostDisplayLabel(session);
             <div class="upcoming-item cursor-pointer" @onclick="@(() => OpenSessionModal(session.ScheduledAt.Day))">
                 <MudText Typo="Typo.caption" Class="mud-text-secondary" Style="min-width:90px;">
                     @session.ScheduledAt.ToString("dd/MM/yyyy")
@@ -86,7 +89,14 @@
     protected override async Task OnInitializedAsync()
     {
         NowPlayingService.OnChange += OnNowPlayingChanged;
+        ActiveGroupService.OnGroupChanged += OnGroupChanged;
         await LoadMonth();
+    }
+
+    private async Task OnGroupChanged()
+    {
+        await LoadMonth();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnNowPlayingChanged()
@@ -97,10 +107,13 @@
 
     private async Task LoadMonth()
     {
-        var np = await NowPlayingRepo.GetCurrentAsync();
+        var groupId = ActiveGroupService.GroupId;
+        if (groupId == 0) return;
+
+        var np = await NowPlayingRepo.GetCurrentAsync(groupId);
         _nowPlayingName = np?.GameEntry?.Name;
-        _monthSessions = await SessionService.GetSessionsForMonthAsync(_currentDate.Year, _currentDate.Month);
-        _upcoming = await SessionService.GetUpcomingAsync(GameConstants.Defaults.UpcomingSessionCount);
+        _monthSessions = await SessionService.GetSessionsForMonthAsync(groupId, _currentDate.Year, _currentDate.Month);
+        _upcoming = await SessionService.GetUpcomingAsync(groupId, GameConstants.Defaults.UpcomingSessionCount);
         BuildCalendar();
     }
 
@@ -127,6 +140,19 @@
                 Session = session
             });
         }
+    }
+
+    private string GetHostNickname(PlannedSession session) =>
+        session.HostMember?.Nickname
+        ?? session.HostMember?.AppUser?.DisplayName?.ToLowerInvariant()
+        ?? "unknown";
+
+    private string GetHostDisplayLabel(PlannedSession session)
+    {
+        var displayName = session.HostMember?.AppUser?.DisplayName
+            ?? session.HostMember?.Nickname
+            ?? "?";
+        return $"{displayName}'s";
     }
 
     private async Task PrevMonth()
@@ -157,5 +183,6 @@
     public void Dispose()
     {
         NowPlayingService.OnChange -= OnNowPlayingChanged;
+        ActiveGroupService.OnGroupChanged -= OnGroupChanged;
     }
 }

@@ -5,11 +5,14 @@ namespace CheapNights.Services;
 
 public class SessionService(SessionRepo repo)
 {
-    public Task<List<PlannedSession>> GetSessionsForMonthAsync(int year, int month) => repo.GetForMonthAsync(year, month);
+    public Task<List<PlannedSession>> GetSessionsForMonthAsync(int groupId, int year, int month) =>
+        repo.GetForMonthAsync(groupId, year, month);
 
-    public Task<List<PlannedSession>> GetUpcomingAsync(int count = 8) => repo.GetUpcomingAsync(count);
+    public Task<List<PlannedSession>> GetUpcomingAsync(int groupId, int count = 8) =>
+        repo.GetUpcomingAsync(groupId, count);
 
-    public Task<PlannedSession?> GetByDateAsync(DateTime date) => repo.GetByDateAsync(date);
+    public Task<PlannedSession?> GetByDateAsync(int groupId, DateTime date) =>
+        repo.GetByDateAsync(groupId, date);
 
     public Task SaveSessionAsync(PlannedSession session) => repo.SaveSessionAsync(session);
 

@@ -31,7 +31,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpClient();
-builder.Services.AddDbContextFactory<HorrorDbContext>(opt =>
+builder.Services.AddDbContextFactory<CheapNightsDbContext>(opt =>
 {
     if (builder.Environment.IsDevelopment())
     {
@@ -49,8 +49,11 @@ builder.Services.AddScoped<GameEntryRepo>();
 builder.Services.AddScoped<SessionRepo>();
 builder.Services.AddScoped<NowPlayingRepo>();
 builder.Services.AddScoped<StatusRepo>();
+builder.Services.AddScoped<GroupRepo>();
+builder.Services.AddScoped<AppUserRepo>();
 builder.Services.AddScoped<RoadmapService>();
 builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<ActiveGroupService>();
 builder.Services.AddSingleton<NowPlayingService>();
 builder.Services.AddSingleton<PlexAuthService>();
 
@@ -60,7 +63,7 @@ var app = builder.Build();
 // Prod: MigrateAsync applies pending migrations on startup
 await using (var scope = app.Services.CreateAsyncScope())
 {
-    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<HorrorDbContext>>();
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<CheapNightsDbContext>>();
     await using var db = factory.CreateDbContext();
 
     if (app.Environment.IsDevelopment())

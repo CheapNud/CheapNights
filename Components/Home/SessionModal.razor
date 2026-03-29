@@ -1,6 +1,7 @@
 @inject SessionService SessionService
 @inject GameEntryRepo GameEntryRepo
 @inject NowPlayingRepo NowPlayingRepo
+@inject ActiveGroupService ActiveGroupService
 
 <MudDialog>
     <DialogContent>
@@ -30,9 +31,12 @@
             }
 
             <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
-            <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
-                <MudToggleItem T="string" Value="@(GameConstants.Players.BrechtKey)">🏠 @(GameConstants.Players.Brecht)'s place</MudToggleItem>
-                <MudToggleItem T="string" Value="@(GameConstants.Players.PieterKey)">🏠 @(GameConstants.Players.Pieter)'s place</MudToggleItem>
+            <MudToggleGroup T="int?" @bind-Value="_hostMemberId" Style="margin-bottom:16px;">
+                @foreach (var member in _members)
+                {
+                    var displayName = member.AppUser?.DisplayName ?? member.Nickname ?? "?";
+                    <MudToggleItem T="int?" Value="@((int?)member.Id)">🏠 @(displayName)'s place</MudToggleItem>
+                }
             </MudToggleGroup>
 
             <MudTextField T="string" Label="Notes" @bind-Value="_notes" Lines="3"
@@ -58,9 +62,10 @@
 
     private bool _loaded;
     private List<GameEntry> _games = [];
+    private List<GroupMember> _members = [];
     private GameEntry? _selectedGame;
     private TimeSpan? _selectedTime = GameConstants.Defaults.DefaultSessionTime;
-    private string _location = GameConstants.Players.BrechtKey;
+    private int? _hostMemberId;
     private string _notes = "";
     private bool _useCurrentGame = true;
     private string? _nowPlayingName;
@@ -68,17 +73,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _games = await GameEntryRepo.GetSelectableGamesAsync();
-        var np = await NowPlayingRepo.GetCurrentAsync();
+        var groupId = ActiveGroupService.GroupId;
+        _members = ActiveGroupService.Members;
+        _hostMemberId = _members.FirstOrDefault()?.Id;
+
+        _games = await GameEntryRepo.GetSelectableGamesAsync(groupId);
+        var np = await NowPlayingRepo.GetCurrentAsync(groupId);
         _nowPlayingName = np?.GameEntry?.Name;
 
-        _existingSession = await SessionService.GetByDateAsync(SelectedDate);
+        _existingSession = await SessionService.GetByDateAsync(groupId, SelectedDate);
         if (_existingSession is not null)
         {
             _useCurrentGame = _existingSession.UseCurrentGame;
             _selectedGame = _games.FirstOrDefault(g => g.Id == _existingSession.GameEntryId);
             _selectedTime = _existingSession.ScheduledAt.TimeOfDay;
-            _location = _existingSession.Location;
+            _hostMemberId = _existingSession.HostMemberId;
             _notes = _existingSession.Notes ?? "";
         }
         _loaded = true;
@@ -91,13 +100,14 @@
 
     private async Task Save()
     {
+        var groupId = ActiveGroupService.GroupId;
         var scheduledAt = DateTime.SpecifyKind(SelectedDate.Date + (_selectedTime ?? GameConstants.Defaults.DefaultSessionTime), DateTimeKind.Utc);
-        var session = _existingSession ?? new PlannedSession { Location = _location };
+        var session = _existingSession ?? new PlannedSession { GroupId = groupId };
 
         session.ScheduledAt = scheduledAt;
         session.UseCurrentGame = _useCurrentGame;
         session.GameEntryId = _useCurrentGame ? null : _selectedGame?.Id;
-        session.Location = _location;
+        session.HostMemberId = _hostMemberId;
         session.Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes;
         session.CustomGame = !_useCurrentGame && _selectedGame is null ? GameConstants.Defaults.DefaultCustomGame : null;
 

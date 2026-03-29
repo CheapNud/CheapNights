@@ -1,30 +1,35 @@
 using CheapHelpers.EF.Repositories;
 using CheapNights.Data;
-using CheapNights.Helpers;
 using CheapNights.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CheapNights.Repositories;
 
-public class NowPlayingRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRepo<HorrorDbContext>(factory)
+public class NowPlayingRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRepo<CheapNightsDbContext>(factory)
 {
-    public async Task<NowPlaying?> GetCurrentAsync()
+    public async Task<NowPlaying?> GetCurrentAsync(int groupId)
     {
         using var db = _factory.CreateDbContext();
         return await db.NowPlaying
             .Include(n => n.GameEntry)
-            .FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(n => n.GroupId == groupId);
     }
 
     /// <summary>
-    /// Sets the currently playing game. When switching to a different game,
+    /// Sets the currently playing game for a group. When switching to a different game,
     /// the previous game is automatically marked as completed (IsCompleted + CompletedAt).
     /// </summary>
-    public async Task SetCurrentAsync(int? gameEntryId, string? statusNote)
+    public async Task SetCurrentAsync(int groupId, int? gameEntryId, string? statusNote)
     {
         using var db = _factory.CreateDbContext();
-        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.Id == GameConstants.Defaults.NowPlayingId);
-        if (np is null) return;
+        var np = await db.NowPlaying.FirstOrDefaultAsync(n => n.GroupId == groupId);
+
+        if (np is null)
+        {
+            np = new NowPlaying { GroupId = groupId };
+            db.NowPlaying.Add(np);
+        }
 
         if (np.GameEntryId is not null && np.GameEntryId != gameEntryId)
         {
@@ -42,8 +47,8 @@ public class NowPlayingRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRe
         await db.SaveChangesAsync();
     }
 
-    public async Task ClearAsync()
+    public async Task ClearAsync(int groupId)
     {
-        await SetCurrentAsync(null, null);
+        await SetCurrentAsync(groupId, null, null);
     }
 }

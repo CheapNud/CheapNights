@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CheapNights.Repositories;
 
-public class StatusRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRepo<HorrorDbContext>(factory)
+public class StatusRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRepo<CheapNightsDbContext>(factory)
 {
     public async Task<List<Status>> GetSelectableAsync()
     {

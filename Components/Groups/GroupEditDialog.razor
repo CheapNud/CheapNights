@@ -1,0 +1,58 @@
+@inject GroupRepo GroupRepo
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField T="string" Label="Group Name" @bind-Value="_name" Variant="Variant.Outlined"
+                      Placeholder="Horror Nights, Schedule 1..." />
+        <MudTextField T="string" Label="Description" @bind-Value="_description" Variant="Variant.Outlined"
+                      Placeholder="What's this group about?" Lines="2" Class="mt-3" />
+        <MudColorPicker Label="Theme Color" @bind-Text="_themeColor" Style="width:100%;"
+                        Variant="Variant.Outlined" Disablealpha="true" ColorPickerMode="ColorPickerMode.HEX"
+                        Class="mt-3" />
+        <MudTextField T="string" Label="Icon (Material)" @bind-Value="_iconName" Variant="Variant.Outlined"
+                      Placeholder="Theaters, SportsEsports, Casino..." Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Group? ExistingGroup { get; set; }
+
+    private string _name = "";
+    private string? _description;
+    private string _themeColor = "#c0392b";
+    private string? _iconName;
+
+    protected override void OnInitialized()
+    {
+        if (ExistingGroup is not null)
+        {
+            _name = ExistingGroup.Name;
+            _description = ExistingGroup.Description;
+            _themeColor = ExistingGroup.ThemeColor ?? "#c0392b";
+            _iconName = ExistingGroup.IconName;
+        }
+    }
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(_name)) return;
+
+        var group = ExistingGroup ?? new Group { CreatedAt = DateTime.UtcNow };
+        group.Name = _name.Trim();
+        group.Description = string.IsNullOrWhiteSpace(_description) ? null : _description.Trim();
+        group.ThemeColor = _themeColor;
+        group.IconName = string.IsNullOrWhiteSpace(_iconName) ? null : _iconName.Trim();
+
+        await GroupRepo.SaveGroupAsync(group);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

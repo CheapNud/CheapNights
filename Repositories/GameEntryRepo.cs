@@ -5,43 +5,50 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CheapNights.Repositories;
 
-public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRepo<HorrorDbContext>(factory)
+public class GameEntryRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRepo<CheapNightsDbContext>(factory)
 {
-    public async Task<List<GameEntry>> GetByCategoryAsync(int categoryId)
+    public async Task<List<GameEntry>> GetByCategoryAsync(int categoryId, int groupId)
     {
         using var db = _factory.CreateDbContext();
         return await db.GameEntries
             .Include(g => g.Status)
             .Include(g => g.Category)
             .Include(g => g.EntryType)
-            .Include(g => g.PlatformBrecht)
-            .Include(g => g.PlatformPieter)
-            .Where(g => g.CategoryId == categoryId)
+            .Include(g => g.MemberPlatforms)
+                .ThenInclude(mp => mp.Platform)
+            .Include(g => g.MemberPlatforms)
+                .ThenInclude(mp => mp.GroupMember)
+                    .ThenInclude(gm => gm!.AppUser)
+            .Where(g => g.CategoryId == categoryId && g.GroupId == groupId)
             .OrderBy(g => g.SortOrder)
             .AsNoTracking()
             .ToListAsync();
     }
 
-    public async Task<List<GameEntry>> GetSelectableGamesAsync()
+    public async Task<List<GameEntry>> GetSelectableGamesAsync(int groupId)
     {
         using var db = _factory.CreateDbContext();
         return await db.GameEntries
             .Include(g => g.Status)
-            .Where(g => g.Status == null || g.Status.IsSelectable)
+            .Where(g => g.GroupId == groupId && (g.Status == null || g.Status.IsSelectable))
             .OrderBy(g => g.SortOrder)
             .AsNoTracking()
             .ToListAsync();
     }
 
-    public async Task<List<GameEntry>> GetAllOrderedAsync()
+    public async Task<List<GameEntry>> GetAllOrderedAsync(int groupId)
     {
         using var db = _factory.CreateDbContext();
         return await db.GameEntries
             .Include(g => g.Status)
             .Include(g => g.Category)
             .Include(g => g.EntryType)
-            .Include(g => g.PlatformBrecht)
-            .Include(g => g.PlatformPieter)
+            .Include(g => g.MemberPlatforms)
+                .ThenInclude(mp => mp.Platform)
+            .Include(g => g.MemberPlatforms)
+                .ThenInclude(mp => mp.GroupMember)
+                    .ThenInclude(gm => gm!.AppUser)
+            .Where(g => g.GroupId == groupId)
             .OrderBy(g => g.SortOrder)
             .AsNoTracking()
             .ToListAsync();
@@ -63,8 +70,6 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
         entry.StoryEra = updated.StoryEra;
         entry.StarRating = updated.StarRating;
         entry.LengthLabel = updated.LengthLabel;
-        entry.PlatformBrechtId = updated.PlatformBrechtId;
-        entry.PlatformPieterId = updated.PlatformPieterId;
         entry.IsCouchCoop = updated.IsCouchCoop;
         entry.SortLabel = updated.SortLabel;
         entry.SortOrder = updated.SortOrder;
@@ -72,6 +77,38 @@ public class GameEntryRepo(IDbContextFactory<HorrorDbContext> factory) : BaseRep
         entry.CompletedAt = updated.CompletedAt;
         entry.CompletedTime = updated.CompletedTime;
 
+        await db.SaveChangesAsync();
+    }
+
+    public async Task SaveMemberPlatformAsync(int gameEntryId, int groupMemberId, int? platformId)
+    {
+        using var db = _factory.CreateDbContext();
+        var existing = await db.MemberGamePlatforms
+            .FirstOrDefaultAsync(mp => mp.GameEntryId == gameEntryId && mp.GroupMemberId == groupMemberId);
+
+        if (platformId is null)
+        {
+            if (existing is not null)
+            {
+                db.MemberGamePlatforms.Remove(existing);
+                await db.SaveChangesAsync();
+            }
+            return;
+        }
+
+        if (existing is not null)
+        {
+            existing.PlatformId = platformId.Value;
+        }
+        else
+        {
+            db.MemberGamePlatforms.Add(new MemberGamePlatform
+            {
+                GroupMemberId = groupMemberId,
+                GameEntryId = gameEntryId,
+                PlatformId = platformId.Value
+            });
+        }
         await db.SaveChangesAsync();
     }
 
