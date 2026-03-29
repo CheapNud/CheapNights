@@ -1,6 +1,6 @@
 <!--
   TODO.md — CheapNights project work tracker
-  Last updated: 2026-03-17
+  Last updated: 2026-03-28
 
   RULES FOR AI AGENTS:
   - Update the "Last updated" date above whenever you modify this file
@@ -28,13 +28,13 @@
 
 ## Blocking
 
-_Nothing blocking._
+- [ ] (2026-03-28) Migrate local Plex auth to CheapHelpers shared provider [user]
+  - Remove `Services/PlexAuthService.cs`, `Helpers/AuthEndpoints.cs`, `Helpers/PlexConstants.cs`
+  - Remove `DTOs/PlexPinResponse.cs`, `DTOs/PlexUserInfo.cs`
+  - Add CheapHelpers.Services + CheapHelpers.Blazor references
+  - Wire `AddPlexAuth()` + `MapPlexAuthEndpoints()` in Program.cs with `AuthorizeUser` hook for server access gating
 
 ## Planned
-
-- [ ] (2026-03-17) Replace local Plex auth with CheapHelpers shared provider [audit]
-  - After CheapHelpers publishes `Auth/Plex/PlexAuthProvider`
-  - Remove local PlexAuthService, PlexUser, auth endpoints — use shared package
 
 ## Future
 
