@@ -16,6 +16,18 @@ public class NowPlayingRepo(IDbContextFactory<CheapNightsDbContext> factory) : B
             .FirstOrDefaultAsync(n => n.GroupId == groupId);
     }
 
+    public async Task<Dictionary<int, string?>> GetNowPlayingNamesAsync(IEnumerable<int> groupIds)
+    {
+        using var db = _factory.CreateDbContext();
+        var ids = groupIds.ToList();
+
+        return await db.NowPlaying
+            .Include(n => n.GameEntry)
+            .Where(n => ids.Contains(n.GroupId))
+            .AsNoTracking()
+            .ToDictionaryAsync(n => n.GroupId, n => n.GameEntry != null ? n.GameEntry.Name : null);
+    }
+
     /// <summary>
     /// Sets the currently playing game for a group. When switching to a different game,
     /// the previous game is automatically marked as completed (IsCompleted + CompletedAt).

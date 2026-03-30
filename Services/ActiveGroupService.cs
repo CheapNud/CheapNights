@@ -9,7 +9,9 @@ public class ActiveGroupService
 {
     public Group? ActiveGroup { get; private set; }
     public List<GroupMember> Members { get; private set; } = [];
+    public List<Group> UserGroups { get; private set; } = [];
     public int GroupId => ActiveGroup?.Id ?? 0;
+    public IEnumerable<int> AllGroupIds => UserGroups.Select(g => g.Id);
 
     public event Func<Task>? OnGroupChanged;
 
@@ -30,6 +32,8 @@ public class ActiveGroupService
             }
         }
     }
+
+    public void SetUserGroups(List<Group> groups) => UserGroups = groups;
 
     public GroupMember? GetMemberByUserId(int appUserId) =>
         Members.FirstOrDefault(m => m.AppUserId == appUserId);

@@ -80,8 +80,8 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
         // ═══════════════════════════════════════
 
         modelBuilder.Entity<Group>().HasData(
-            new Group { Id = 1, Name = "Horror Nights", Description = "Survival horror roadmap — Resident Evil & Silent Hill", ThemeColor = "#c0392b", IconName = "Theaters", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
-            new Group { Id = 2, Name = "Schedule 1", Description = "Schedule 1 gaming sessions", ThemeColor = "#4caf50", IconName = "SportsEsports", CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
+            new Group { Id = 1, Name = "Horror Nights", Description = "Survival horror roadmap — Resident Evil & Silent Hill", ThemeColor = "#c0392b", ThemePreset = "horror-dark", IconName = "Theaters", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
+            new Group { Id = 2, Name = "Schedule 1", Description = "Schedule 1 gaming sessions", ThemeColor = "#4caf50", ThemePreset = "forest", IconName = "SportsEsports", CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         // ═══════════════════════════════════════

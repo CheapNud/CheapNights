@@ -4,10 +4,34 @@
 @inject AppUserRepo AppUserRepo
 @inject ActiveGroupService ActiveGroupService
 
-<MudThemeProvider Theme="_theme" IsDarkMode="true" />
+<MudThemeProvider Theme="_theme" IsDarkMode="_palette.IsDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+
+<style>
+    :root {
+        --primary: @_palette.Primary;
+        --secondary: @_palette.Secondary;
+        --bg: @_palette.Background;
+        --surface: @_palette.Surface;
+        --surface2: @_palette.Surface2;
+        --border: @_palette.Border;
+        --text: @_palette.TextPrimary;
+        --text-dim: @_palette.TextSecondary;
+        --text-mid: @_palette.TextMid;
+        --gradient-start: @_palette.GradientStart;
+        --gradient-mid: @_palette.GradientMid;
+        --gradient-end: @_palette.GradientEnd;
+    }
+    html, body { background: @_palette.Background; color: @_palette.TextPrimary; }
+    .mud-dialog { background: @_palette.Surface !important; border: 1px solid @_palette.Border !important; }
+
+    @if (!_palette.ShowScanlines)
+    {
+        <text>body::after { display: none !important; }</text>
+    }
+</style>
 
 <div class="horror-app">
     <AuthorizeView>
@@ -21,7 +45,15 @@
                                    Style="color:#888; max-width:220px; font-size:0.85rem;">
                             @foreach (var group in _groups)
                             {
-                                <MudSelectItem T="int" Value="group.Id">@group.Name</MudSelectItem>
+                                <MudSelectItem T="int" Value="group.Id">
+                                    <div class="d-flex align-center gap-2">
+                                        @if (!string.IsNullOrEmpty(group.ThemeColor))
+                                        {
+                                            <div style="width:8px; height:8px; border-radius:50%; background:@group.ThemeColor;"></div>
+                                        }
+                                        @group.Name
+                                    </div>
+                                </MudSelectItem>
                             }
                         </MudSelect>
                     }
@@ -51,7 +83,8 @@
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
 
-    private MudTheme _theme = BuildDefaultTheme();
+    private MudTheme _theme = BuildMudTheme(ThemePresets.HorrorDark);
+    private ThemePalette _palette = ThemePresets.HorrorDark;
     private List<Group> _groups = [];
     private int _selectedGroupId;
 
@@ -72,6 +105,8 @@
         if (appUser is null) return;
 
         _groups = await GroupRepo.GetGroupsForUserAsync(appUser.Id);
+        ActiveGroupService.SetUserGroups(_groups);
+
         if (_groups.Count > 0)
         {
             _selectedGroupId = _groups[0].Id;
@@ -90,8 +125,21 @@
         var group = await GroupRepo.GetWithMembersAsync(groupId);
         if (group is null) return;
 
-        _theme = BuildTheme(group.ThemeColor);
+        ApplyTheme(group);
         await ActiveGroupService.SetActiveGroupAsync(group, [.. group.Members]);
+    }
+
+    private void ApplyTheme(Group group)
+    {
+        _palette = ThemePresets.Get(group.ThemePreset);
+
+        // If group has a custom ThemeColor, override the preset's primary
+        if (!string.IsNullOrEmpty(group.ThemeColor) && group.ThemeColor != _palette.Primary)
+        {
+            _palette = _palette with { Primary = group.ThemeColor, GradientStart = group.ThemeColor };
+        }
+
+        _theme = BuildMudTheme(_palette);
     }
 
     private Task OnActiveGroupChanged()
@@ -100,27 +148,50 @@
         return Task.CompletedTask;
     }
 
-    private static MudTheme BuildTheme(string? themeColor) => new()
+    private static MudTheme BuildMudTheme(ThemePalette palette)
     {
-        PaletteDark = new PaletteDark
-        {
-            Primary = themeColor ?? "#c0392b",
-            Secondary = "#2a9d8f",
-            Background = "#080808",
-            Surface = "#0f0f0f",
-            AppbarBackground = "#080808",
-            TextPrimary = "#e0e0e0",
-            TextSecondary = "#666666",
-            DrawerBackground = "#0f0f0f",
-            DrawerText = "#e0e0e0",
-            ActionDefault = "#e0e0e0",
-            ActionDisabled = "#444444",
-            Dark = "#1e1e1e",
-            DarkContrastText = "#e0e0e0",
-        }
-    };
+        var theme = new MudTheme();
 
-    private static MudTheme BuildDefaultTheme() => BuildTheme("#c0392b");
+        if (palette.IsDarkMode)
+        {
+            theme.PaletteDark = new PaletteDark
+            {
+                Primary = palette.Primary,
+                Secondary = palette.Secondary,
+                Background = palette.Background,
+                Surface = palette.Surface,
+                AppbarBackground = palette.AppbarBackground,
+                TextPrimary = palette.TextPrimary,
+                TextSecondary = palette.TextSecondary,
+                DrawerBackground = palette.DrawerBackground,
+                DrawerText = palette.DrawerText,
+                ActionDefault = palette.ActionDefault,
+                ActionDisabled = palette.ActionDisabled,
+                Dark = palette.Dark,
+                DarkContrastText = palette.TextPrimary,
+            };
+        }
+        else
+        {
+            theme.PaletteLight = new PaletteLight
+            {
+                Primary = palette.Primary,
+                Secondary = palette.Secondary,
+                Background = palette.Background,
+                Surface = palette.Surface,
+                AppbarBackground = palette.AppbarBackground,
+                TextPrimary = palette.TextPrimary,
+                TextSecondary = palette.TextSecondary,
+                DrawerBackground = palette.DrawerBackground,
+                DrawerText = palette.DrawerText,
+                ActionDefault = palette.ActionDefault,
+                ActionDisabled = palette.ActionDisabled,
+                Dark = palette.Dark,
+            };
+        }
+
+        return theme;
+    }
 
     public void Dispose()
     {

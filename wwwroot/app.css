@@ -1,5 +1,7 @@
-/* ─── HORROR ROADMAP THEME ─── */
+/* ─── THEME (defaults — overridden dynamically by MainLayout) ─── */
 :root {
+    --primary: #c0392b;
+    --secondary: #2a9d8f;
     --re-red: #c0392b;
     --re-red-dim: #7a1f16;
     --re-red-glow: rgba(192, 57, 43, 0.25);
@@ -20,6 +22,9 @@
     --text: #e0e0e0;
     --text-dim: #666;
     --text-mid: #999;
+    --gradient-start: #c0392b;
+    --gradient-mid: #e8c9b8;
+    --gradient-end: #2a9d8f;
 }
 
 html, body {
@@ -58,7 +63,7 @@ body::after {
     font-size: clamp(56px, 9vw, 108px);
     letter-spacing: 8px;
     line-height: 0.88;
-    background: linear-gradient(130deg, #c0392b 0%, #e8c9b8 45%, #2a9d8f 100%);
+    background: linear-gradient(130deg, var(--gradient-start) 0%, var(--gradient-mid) 45%, var(--gradient-end) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -124,7 +129,7 @@ body::after {
 .section-divider.sh { background: linear-gradient(90deg, var(--sh-teal-dim), transparent); }
 
 .gradient-title {
-    background: linear-gradient(90deg, #c0392b, #e8c9b8, #2a9d8f);
+    background: linear-gradient(90deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -283,8 +288,8 @@ body::after {
 }
 .cal-day:hover { background: var(--surface2); border-color: #333; }
 .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
-.cal-day.today { border-color: #c0392b; }
-.cal-day.today .cal-day-num { color: #e05a4a; }
+.cal-day.today { border-color: var(--primary); }
+.cal-day.today .cal-day-num { color: var(--primary); }
 .cal-day.weekend .cal-day-num { color: #e5a00d; }
 .cal-day-num { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
 .cal-session-dot {
@@ -298,9 +303,7 @@ body::after {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.cal-session-dot.loc-brecht { background: rgba(192,57,43,0.2); color: #e05a4a; border-left: 2px solid #c0392b; }
-.cal-session-dot.loc-pieter { background: rgba(42,157,143,0.2); color: #4cc8be; border-left: 2px solid #2a9d8f; }
-.cal-session-dot.loc-unknown { background: rgba(150,150,150,0.1); color: #888; border-left: 2px solid #555; }
+/* Calendar session dot colors are now applied inline per group ThemeColor */
 
 /* ─── UPCOMING LIST ─── */
 .upcoming-item {
@@ -316,8 +319,7 @@ body::after {
 }
 .upcoming-item:hover { background: var(--surface2); }
 .upcoming-loc { font-size: 11px; padding: 2px 8px; border-radius: 2px; letter-spacing: 1px; }
-.upcoming-loc.loc-brecht { background: rgba(192,57,43,0.15); color: #e05a4a; }
-.upcoming-loc.loc-pieter { background: rgba(42,157,143,0.15); color: #4cc8be; }
+/* Upcoming loc colors are now applied inline per group ThemeColor */
 
 /* ─── LEGEND ─── */
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
