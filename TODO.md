@@ -36,6 +36,10 @@
 
 ## Planned
 
+- [ ] (2026-03-31) Add all live-action Resident Evil films to GameEntry seed data in current sort order [user]
+  - Paul W.S. Anderson series (2002-2016): RE, Apocalypse, Extinction, Afterlife, Retribution, The Final Chapter
+  - Welcome to Raccoon City (2021)
+
 ## Future
 
 _Nothing yet._
