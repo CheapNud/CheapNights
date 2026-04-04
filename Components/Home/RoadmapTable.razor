@@ -128,7 +128,7 @@
         var statusName = StatusName(entry);
         var stripeClass = statusName switch
         {
-            "Essential" => _categoryCode == "SH" ? "stripe-essential-sh" : "stripe-essential-re",
+            "Essential" => $"stripe-essential-{_categoryCode?.ToLower() ?? "re"}",
             "Recommended" => "stripe-recommended",
             "Skip" => "stripe-skip",
             "Upcoming" => "stripe-upcoming",
@@ -176,10 +176,14 @@
         var chipColor = status.ChipColor ?? "#888";
         var chipBg = status.ChipBackground ?? "transparent";
 
-        if (status.Name == "Essential" && _categoryCode == "SH")
+        if (status.Name == "Essential")
         {
-            chipColor = "#4cc8be";
-            chipBg = "rgba(42,157,143,0.1)";
+            (chipColor, chipBg) = _categoryCode?.ToUpper() switch
+            {
+                "SH" => ("#4cc8be", "rgba(42,157,143,0.1)"),
+                "S1" => ("#66bb6a", "rgba(76,175,80,0.1)"),
+                _ => (chipColor, chipBg)
+            };
         }
 
         return $"border-color:{chipColor}40; color:{chipColor}; background:{chipBg};";
