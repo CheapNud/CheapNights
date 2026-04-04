@@ -15,6 +15,20 @@ public class AppUserRepo(IDbContextFactory<CheapNightsDbContext> factory) : Base
             .FirstOrDefaultAsync(u => u.PlexUserId == plexUserId);
     }
 
+    public async Task<List<AppUser>> GetUsersNotInGroupAsync(int groupId)
+    {
+        using var db = _factory.CreateDbContext();
+        var memberUserIds = db.GroupMembers
+            .Where(m => m.GroupId == groupId)
+            .Select(m => m.AppUserId);
+
+        return await db.AppUsers
+            .Where(u => !memberUserIds.Contains(u.Id))
+            .OrderBy(u => u.DisplayName)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public async Task<AppUser> GetOrCreateAsync(string plexUserId, string displayName, string? avatarUrl)
     {
         using var db = _factory.CreateDbContext();

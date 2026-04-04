@@ -50,13 +50,14 @@ else
             </MudCardHeader>
             <MudCardContent>
                 <MudText Typo="Typo.overline" Class="mb-2" Style="letter-spacing:3px;">Members</MudText>
-                <div class="d-flex flex-wrap gap-3">
+                <div class="d-flex flex-wrap gap-3 align-center">
                     @{
                         var members = _groupMembers.GetValueOrDefault(group.Id, []);
                     }
                     @foreach (var member in members)
                     {
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Style="border-color:#333; color:#aaa;">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Style="border-color:#333; color:#aaa;"
+                                 OnClose="@(() => RemoveMember(member))" CloseIcon="@Icons.Material.Filled.Close">
                             @(member.AppUser?.DisplayName ?? member.Nickname ?? "?")
                             @if (!string.IsNullOrEmpty(member.Nickname) && member.Nickname != member.AppUser?.DisplayName?.ToLowerInvariant())
                             {
@@ -65,6 +66,27 @@ else
                         </MudChip>
                     }
                 </div>
+
+                @{
+                    var availableUsers = _availableUsers.GetValueOrDefault(group.Id, []);
+                }
+                @if (availableUsers.Count > 0)
+                {
+                    <div class="d-flex align-center gap-2 mt-3">
+                        <MudSelect T="int?" Label="Add member" Variant="Variant.Outlined" Dense="true"
+                                   Style="max-width:240px;"
+                                   Value="_selectedUserId"
+                                   ValueChanged="@(val => _selectedUserId = val)">
+                            @foreach (var appUser in availableUsers)
+                            {
+                                <MudSelectItem T="int?" Value="@((int?)appUser.Id)">@appUser.DisplayName</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudIconButton Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Primary"
+                                       Size="Size.Small" Disabled="@(_selectedUserId is null)"
+                                       OnClick="@(() => AddMember(group.Id))" />
+                    </div>
+                }
 
                 <MudText Typo="Typo.overline" Class="mt-4 mb-2" Style="letter-spacing:3px;">Categories</MudText>
                 <div class="d-flex flex-wrap gap-3">
@@ -90,9 +112,11 @@ else
 
     private bool _loaded;
     private int _currentUserId;
+    private int? _selectedUserId;
     private List<Group> _groups = [];
     private Dictionary<int, List<GroupMember>> _groupMembers = [];
     private Dictionary<int, List<Category>> _groupCategories = [];
+    private Dictionary<int, List<AppUser>> _availableUsers = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,12 +138,34 @@ else
         _groups = await GroupRepo.GetGroupsForUserAsync(_currentUserId);
         _groupMembers = [];
         _groupCategories = [];
+        _availableUsers = [];
 
         foreach (var group in _groups)
         {
             _groupMembers[group.Id] = await GroupRepo.GetMembersAsync(group.Id);
             _groupCategories[group.Id] = await GroupRepo.GetCategoriesAsync(group.Id);
+            _availableUsers[group.Id] = await AppUserRepo.GetUsersNotInGroupAsync(group.Id);
         }
+    }
+
+    private async Task AddMember(int groupId)
+    {
+        if (_selectedUserId is null) return;
+
+        var member = new GroupMember
+        {
+            GroupId = groupId,
+            AppUserId = _selectedUserId.Value
+        };
+        await GroupRepo.AddMemberAsync(member);
+        _selectedUserId = null;
+        await LoadGroups();
+    }
+
+    private async Task RemoveMember(GroupMember member)
+    {
+        await GroupRepo.RemoveMemberAsync(member.Id);
+        await LoadGroups();
     }
 
     private async Task OpenCreateDialog()
