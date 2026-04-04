@@ -76,8 +76,7 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
 
         modelBuilder.Entity<AppUser>().HasData(
             new AppUser { Id = 1, PlexUserId = "brecht", DisplayName = "Brecht", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
-            new AppUser { Id = 2, PlexUserId = "pieter", DisplayName = "Pieter", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
-            new AppUser { Id = 3, PlexUserId = "miel", DisplayName = "Miel", CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
+            new AppUser { Id = 2, PlexUserId = "pieter", DisplayName = "Pieter", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         // ═══════════════════════════════════════
@@ -95,13 +94,11 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
         // GroupMember 1: Brecht in Horror Nights
         // GroupMember 2: Pieter in Horror Nights
         // GroupMember 3: Brecht in Schedule 1
-        // GroupMember 4: Miel in Schedule 1
 
         modelBuilder.Entity<GroupMember>().HasData(
             new GroupMember { Id = 1, GroupId = 1, AppUserId = 1, Nickname = "brecht" },
             new GroupMember { Id = 2, GroupId = 1, AppUserId = 2, Nickname = "pieter" },
-            new GroupMember { Id = 3, GroupId = 2, AppUserId = 1, Nickname = "brecht" },
-            new GroupMember { Id = 4, GroupId = 2, AppUserId = 3, Nickname = "miel" }
+            new GroupMember { Id = 3, GroupId = 2, AppUserId = 1, Nickname = "brecht" }
         );
 
         // ═══════════════════════════════════════

@@ -1,6 +1,6 @@
 <!--
   TODO.md — CheapNights project work tracker
-  Last updated: 2026-04-04
+  Last updated: 2026-04-04b
 
   RULES FOR AI AGENTS:
   - Update the "Last updated" date above whenever you modify this file
@@ -35,6 +35,9 @@
   - Wire `AddPlexAuth()` + `MapPlexAuthEndpoints()` in Program.cs with `AuthorizeUser` hook for server access gating
 
 ## Planned
+
+- [ ] (2026-04-04) Better onboarding and user management [user]
+  - Welcome flow for new users, proper member invitation, user profile/settings
 
 - [x] (2026-03-29 → 2026-04-04) Create production migration for multi-group schema [plan]
   - Incremental migration with 4-phase data preservation (nullable → migrate → constrain → drop)
