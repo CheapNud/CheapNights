@@ -70,7 +70,7 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
         // ═══════════════════════════════════════
 
         modelBuilder.Entity<AppUser>().HasData(
-            new AppUser { Id = 1, PlexUserId = "95230332", DisplayName = "CheapLudes", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
+            new AppUser { Id = 1, PlexUserId = "brecht", DisplayName = "Brecht", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
             new AppUser { Id = 2, PlexUserId = "pieter", DisplayName = "Pieter", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
             new AppUser { Id = 3, PlexUserId = "miel", DisplayName = "Miel", CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
         );
