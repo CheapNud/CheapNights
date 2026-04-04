@@ -66,6 +66,7 @@
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter] public Group? ExistingGroup { get; set; }
+    [Parameter] public int OwnerUserId { get; set; }
 
     private string _name = "";
     private string? _description;
@@ -111,7 +112,7 @@
     {
         if (string.IsNullOrWhiteSpace(_name)) return;
 
-        var group = ExistingGroup ?? new Group { CreatedAt = DateTime.UtcNow };
+        var group = ExistingGroup ?? new Group { CreatedAt = DateTime.UtcNow, OwnerId = OwnerUserId };
         group.Name = _name.Trim();
         group.Description = string.IsNullOrWhiteSpace(_description) ? null : _description.Trim();
         group.ThemeColor = _themeColor;

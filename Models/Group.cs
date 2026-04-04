@@ -12,5 +12,8 @@ public class Group : IEntityId
     public string? IconName { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    public int? OwnerId { get; set; }
+    public AppUser? Owner { get; set; }
+
     public List<GroupMember> Members { get; set; } = [];
 }
