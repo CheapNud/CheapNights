@@ -77,6 +77,14 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
         var member = await db.GroupMembers.FindAsync(groupMemberId);
         if (member is null) return;
 
+        await db.PlannedSessions
+            .Where(s => s.HostMemberId == groupMemberId)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.HostMemberId, (int?)null));
+
+        await db.MemberGamePlatforms
+            .Where(p => p.GroupMemberId == groupMemberId)
+            .ExecuteDeleteAsync();
+
         db.GroupMembers.Remove(member);
         await db.SaveChangesAsync();
     }
