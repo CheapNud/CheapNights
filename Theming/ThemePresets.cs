@@ -1,0 +1,200 @@
+namespace CheapNights.Theming;
+
+public static class ThemePresets
+{
+    public static ThemePalette HorrorDark { get; } = new()
+    {
+        Name = "horror-dark",
+        DisplayName = "Horror Dark",
+        IsDarkMode = true,
+        Primary = "#c0392b",
+        Secondary = "#2a9d8f",
+        Background = "#080808",
+        Surface = "#0f0f0f",
+        AppbarBackground = "#080808",
+        TextPrimary = "#e0e0e0",
+        TextSecondary = "#666666",
+        DrawerBackground = "#0f0f0f",
+        DrawerText = "#e0e0e0",
+        ActionDefault = "#e0e0e0",
+        ActionDisabled = "#444444",
+        Dark = "#1e1e1e",
+        Surface2 = "#141414",
+        Border = "#1e1e1e",
+        TextMid = "#999",
+        GradientStart = "#c0392b",
+        GradientMid = "#e8c9b8",
+        GradientEnd = "#2a9d8f",
+        ShowScanlines = true,
+    };
+
+    public static ThemePalette NeonNight { get; } = new()
+    {
+        Name = "neon-night",
+        DisplayName = "Neon Night",
+        IsDarkMode = true,
+        Primary = "#e040fb",
+        Secondary = "#00e5ff",
+        Background = "#0a0a12",
+        Surface = "#12121f",
+        AppbarBackground = "#0a0a12",
+        TextPrimary = "#e8e8f0",
+        TextSecondary = "#6a6a80",
+        DrawerBackground = "#12121f",
+        DrawerText = "#e8e8f0",
+        ActionDefault = "#e8e8f0",
+        ActionDisabled = "#3a3a50",
+        Dark = "#1a1a2e",
+        Surface2 = "#181828",
+        Border = "#2a2a3e",
+        TextMid = "#8888a0",
+        GradientStart = "#e040fb",
+        GradientMid = "#7c4dff",
+        GradientEnd = "#00e5ff",
+        ShowScanlines = false,
+    };
+
+    public static ThemePalette Forest { get; } = new()
+    {
+        Name = "forest",
+        DisplayName = "Forest",
+        IsDarkMode = true,
+        Primary = "#4caf50",
+        Secondary = "#8d6e63",
+        Background = "#0a100a",
+        Surface = "#111a11",
+        AppbarBackground = "#0a100a",
+        TextPrimary = "#d4e4d4",
+        TextSecondary = "#5a6e5a",
+        DrawerBackground = "#111a11",
+        DrawerText = "#d4e4d4",
+        ActionDefault = "#d4e4d4",
+        ActionDisabled = "#3a4a3a",
+        Dark = "#1a2a1a",
+        Surface2 = "#152015",
+        Border = "#1e2e1e",
+        TextMid = "#7a907a",
+        GradientStart = "#4caf50",
+        GradientMid = "#a5d6a7",
+        GradientEnd = "#8d6e63",
+        ShowScanlines = false,
+    };
+
+    public static ThemePalette Ocean { get; } = new()
+    {
+        Name = "ocean",
+        DisplayName = "Ocean",
+        IsDarkMode = true,
+        Primary = "#2196f3",
+        Secondary = "#26c6da",
+        Background = "#060d14",
+        Surface = "#0c1620",
+        AppbarBackground = "#060d14",
+        TextPrimary = "#d0e4f0",
+        TextSecondary = "#506878",
+        DrawerBackground = "#0c1620",
+        DrawerText = "#d0e4f0",
+        ActionDefault = "#d0e4f0",
+        ActionDisabled = "#2a3e4e",
+        Dark = "#142838",
+        Surface2 = "#101e2c",
+        Border = "#1a3048",
+        TextMid = "#7090a8",
+        GradientStart = "#2196f3",
+        GradientMid = "#80cbc4",
+        GradientEnd = "#26c6da",
+        ShowScanlines = false,
+    };
+
+    public static ThemePalette Sunset { get; } = new()
+    {
+        Name = "sunset",
+        DisplayName = "Sunset",
+        IsDarkMode = true,
+        Primary = "#ff7043",
+        Secondary = "#ffd54f",
+        Background = "#100808",
+        Surface = "#1a100e",
+        AppbarBackground = "#100808",
+        TextPrimary = "#f0e0d8",
+        TextSecondary = "#7a6058",
+        DrawerBackground = "#1a100e",
+        DrawerText = "#f0e0d8",
+        ActionDefault = "#f0e0d8",
+        ActionDisabled = "#4a3830",
+        Dark = "#2a1a14",
+        Surface2 = "#201410",
+        Border = "#2e1e18",
+        TextMid = "#a08070",
+        GradientStart = "#ff7043",
+        GradientMid = "#ffd54f",
+        GradientEnd = "#ff8a65",
+        ShowScanlines = false,
+    };
+
+    public static ThemePalette DefaultDark { get; } = new()
+    {
+        Name = "default-dark",
+        DisplayName = "Default Dark",
+        IsDarkMode = true,
+        Primary = "#7e57c2",
+        Secondary = "#78909c",
+        Background = "#121212",
+        Surface = "#1e1e1e",
+        AppbarBackground = "#121212",
+        TextPrimary = "#e0e0e0",
+        TextSecondary = "#666666",
+        DrawerBackground = "#1e1e1e",
+        DrawerText = "#e0e0e0",
+        ActionDefault = "#e0e0e0",
+        ActionDisabled = "#444444",
+        Dark = "#272727",
+        Surface2 = "#232323",
+        Border = "#333333",
+        TextMid = "#999999",
+        GradientStart = "#7e57c2",
+        GradientMid = "#b0bec5",
+        GradientEnd = "#78909c",
+        ShowScanlines = false,
+    };
+
+    public static ThemePalette DefaultLight { get; } = new()
+    {
+        Name = "default-light",
+        DisplayName = "Default Light",
+        IsDarkMode = false,
+        Primary = "#1976d2",
+        Secondary = "#26a69a",
+        Background = "#fafafa",
+        Surface = "#ffffff",
+        AppbarBackground = "#ffffff",
+        TextPrimary = "#212121",
+        TextSecondary = "#757575",
+        DrawerBackground = "#ffffff",
+        DrawerText = "#212121",
+        ActionDefault = "#424242",
+        ActionDisabled = "#bdbdbd",
+        Dark = "#eeeeee",
+        Surface2 = "#f5f5f5",
+        Border = "#e0e0e0",
+        TextMid = "#9e9e9e",
+        GradientStart = "#1976d2",
+        GradientMid = "#90caf9",
+        GradientEnd = "#26a69a",
+        ShowScanlines = false,
+    };
+
+    public static IReadOnlyDictionary<string, ThemePalette> All { get; } = new Dictionary<string, ThemePalette>
+    {
+        [HorrorDark.Name] = HorrorDark,
+        [NeonNight.Name] = NeonNight,
+        [Forest.Name] = Forest,
+        [Ocean.Name] = Ocean,
+        [Sunset.Name] = Sunset,
+        [DefaultDark.Name] = DefaultDark,
+        [DefaultLight.Name] = DefaultLight,
+    };
+
+    public static ThemePalette Get(string? presetName) =>
+        presetName is not null && All.TryGetValue(presetName, out var palette) ? palette : HorrorDark;
+}

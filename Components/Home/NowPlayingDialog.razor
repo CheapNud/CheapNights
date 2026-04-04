@@ -1,6 +1,7 @@
 @inject NowPlayingRepo NowPlayingRepo
 @inject GameEntryRepo GameEntryRepo
 @inject NowPlayingService NowPlayingService
+@inject ActiveGroupService ActiveGroupService
 
 <MudDialog>
     <DialogContent>
@@ -46,9 +47,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _games = await GameEntryRepo.GetSelectableGamesAsync();
+        var groupId = ActiveGroupService.GroupId;
+        _games = await GameEntryRepo.GetSelectableGamesAsync(groupId);
 
-        var np = await NowPlayingRepo.GetCurrentAsync();
+        var np = await NowPlayingRepo.GetCurrentAsync(groupId);
         if (np is not null)
         {
             _selectedGame = _games.FirstOrDefault(g => g.Id == np.GameEntryId);
@@ -64,14 +66,14 @@
 
     private async Task Save()
     {
-        await NowPlayingRepo.SetCurrentAsync(_selectedGame?.Id, _statusNote);
+        await NowPlayingRepo.SetCurrentAsync(ActiveGroupService.GroupId, _selectedGame?.Id, _statusNote);
         await NowPlayingService.NotifyChangedAsync();
         MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task Clear()
     {
-        await NowPlayingRepo.ClearAsync();
+        await NowPlayingRepo.ClearAsync(ActiveGroupService.GroupId);
         await NowPlayingService.NotifyChangedAsync();
         MudDialog.Close(DialogResult.Ok(true));
     }

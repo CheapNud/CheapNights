@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace CheapNights.Migrations
 {
-    [DbContext(typeof(HorrorDbContext))]
-    partial class HorrorDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(CheapNightsDbContext))]
+    partial class CheapNightsDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -21,6 +21,56 @@ namespace CheapNights.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CheapNights.Models.AppUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PlexUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Brecht",
+                            PlexUserId = "brecht"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Pieter",
+                            PlexUserId = "pieter"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Miel",
+                            PlexUserId = "miel"
+                        });
+                });
 
             modelBuilder.Entity("CheapNights.Models.Category", b =>
                 {
@@ -37,6 +87,9 @@ namespace CheapNights.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -46,6 +99,8 @@ namespace CheapNights.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GroupId");
+
                     b.ToTable("Categories");
 
                     b.HasData(
@@ -54,6 +109,7 @@ namespace CheapNights.Migrations
                             Id = 1,
                             BadgeColor = "re",
                             Code = "RE",
+                            GroupId = 1,
                             Name = "Resident Evil",
                             SortOrder = 0
                         },
@@ -62,8 +118,18 @@ namespace CheapNights.Migrations
                             Id = 2,
                             BadgeColor = "sh",
                             Code = "SH",
+                            GroupId = 1,
                             Name = "Silent Hill",
                             SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BadgeColor = "s1",
+                            Code = "S1",
+                            GroupId = 2,
+                            Name = "Schedule 1",
+                            SortOrder = 0
                         });
                 });
 
@@ -130,6 +196,9 @@ namespace CheapNights.Migrations
                     b.Property<string>("GameNote")
                         .HasColumnType("text");
 
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
@@ -145,12 +214,6 @@ namespace CheapNights.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int?>("PlatformBrechtId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PlatformPieterId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Protagonist")
                         .HasColumnType("text");
@@ -176,9 +239,7 @@ namespace CheapNights.Migrations
 
                     b.HasIndex("EntryTypeId");
 
-                    b.HasIndex("PlatformBrechtId");
-
-                    b.HasIndex("PlatformPieterId");
+                    b.HasIndex("GroupId");
 
                     b.HasIndex("StatusId");
 
@@ -191,12 +252,12 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Grace & Leon face a new Megamycete threat — series finale, wraps up the Winters saga",
+                            GroupId = 1,
                             IsCompleted = true,
                             IsCouchCoop = false,
                             IsMovie = false,
                             LengthLabel = "15h",
                             Name = "RE9 REQUIEM",
-                            PlatformPieterId = 2,
                             Protagonist = "Grace + Leon",
                             SortLabel = "✓",
                             SortOrder = 0,
@@ -210,12 +271,12 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Ethan searches for Mia in the Baker estate — first-person horror, soft reboot of the series",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
                             LengthLabel = "9h",
                             Name = "RE7 BIOHAZARD",
-                            PlatformPieterId = 2,
                             Protagonist = "Ethan Winters",
                             SortLabel = "1",
                             SortOrder = 1,
@@ -229,12 +290,12 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Play immediately after RE7 — direct sequel",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
                             LengthLabel = "10h",
                             Name = "RE8 VILLAGE",
-                            PlatformPieterId = 2,
                             Protagonist = "Ethan Winters",
                             SortLabel = "2",
                             SortOrder = 2,
@@ -248,6 +309,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 2,
                             GameNote = "Leon, Chris, Jill, Claire & Rebecca reunite — set after Village",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
@@ -265,12 +327,12 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Closes the Wesker arc",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = true,
                             IsMovie = false,
                             LengthLabel = "12h",
                             Name = "RE5",
-                            PlatformBrechtId = 1,
                             Protagonist = "Chris + Sheva",
                             SortLabel = "3",
                             SortOrder = 4,
@@ -284,6 +346,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 2,
                             GameNote = "Leon in a bio-war zone — bridges RE5 and RE6",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
@@ -301,6 +364,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 2,
                             GameNote = "Leon + Chris + Rebecca, set after RE6 — watch after RE6 recap",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
@@ -318,6 +382,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Jill + Chris on a cruise ship — fills the RE5→RE4 gap",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -336,6 +401,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Leon at his best",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -354,6 +420,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 3,
                             GameNote = "Ada Wong's parallel story — recontextualizes RE4R. Play immediately after.",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -372,6 +439,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 2,
                             GameNote = "Leon + Claire reunite ~1yr after RE4",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
@@ -389,6 +457,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 2,
                             GameNote = "Netflix CG series — Leon & Claire, White House conspiracy",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
@@ -406,6 +475,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Claire + Barry, prison camp horror — has co-op!",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = true,
                             IsMovie = false,
@@ -424,12 +494,12 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Raccoon City's final days",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
                             LengthLabel = "6h",
                             Name = "RE3 REMAKE",
-                            PlatformBrechtId = 1,
                             Protagonist = "Jill Valentine",
                             SortLabel = "5",
                             SortOrder = 13,
@@ -443,6 +513,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Leon's origin. Where it all began for him.",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -461,6 +532,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Watch a story recap instead",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -479,11 +551,11 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Non-canon multiplayer, dead servers",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
                             Name = "RE RESISTANCE",
-                            PlatformBrechtId = 1,
                             Protagonist = "Various",
                             SortLabel = "—",
                             SortOrder = 16,
@@ -497,6 +569,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Rumored 2027 — Claire's story",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -514,6 +587,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 2,
                             GameNote = "Dir. Zach Cregger (Barbarian)",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
@@ -532,6 +606,7 @@ namespace CheapNights.Migrations
                             CategoryId = 1,
                             EntryTypeId = 1,
                             GameNote = "Early dev — 4–7 years out",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -549,12 +624,12 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 1,
                             GameNote = "FREE on PS5 — standalone intro to Silent Hill themes, modern setting with a new protagonist",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
                             LengthLabel = "2h",
                             Name = "SH: THE SHORT MESSAGE",
-                            PlatformPieterId = 2,
                             Protagonist = "New protagonist",
                             SortLabel = "0",
                             SortOrder = 100,
@@ -568,6 +643,7 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 1,
                             GameNote = "James Sunderland returns to Silent Hill after receiving a letter from his dead wife — psychological horror masterpiece",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -586,12 +662,12 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 2,
                             GameNote = "Live-action adaptation of SH2 — directed by Christophe Gans, compare with the game version",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
                             LengthLabel = "2h",
                             Name = "RETURN TO SILENT HILL (2026)",
-                            PlatformBrechtId = 3,
                             Protagonist = "Live-action",
                             SortOrder = 102,
                             StarRating = 2,
@@ -604,6 +680,7 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 2,
                             GameNote = "Own continuity loosely adapting SH1 + SH3 — not canon to games, optional horror movie night",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = true,
@@ -621,6 +698,7 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 1,
                             GameNote = "Set in 1960s Japan with a completely new story — bold departure from Americana fog, kowloon-style horror",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -639,6 +717,7 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 1,
                             GameNote = "Alex Shepherd returns to Shepherd's Glen — combat-focused, Western-developed, widely considered weakest entry",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -656,6 +735,7 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 1,
                             GameNote = "By No Code (Stories Untold) — Scotland 1996, first-person, P.T.-inspired indie horror set in the SH universe",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -673,6 +753,7 @@ namespace CheapNights.Migrations
                             CategoryId = 2,
                             EntryTypeId = 1,
                             GameNote = "Bloober Team remaking the original — Harry Mason searching for his daughter Cheryl, the story that started it all",
+                            GroupId = 1,
                             IsCompleted = false,
                             IsCouchCoop = false,
                             IsMovie = false,
@@ -683,6 +764,205 @@ namespace CheapNights.Migrations
                             StarRating = 0,
                             StatusId = 5,
                             StoryEra = "2027"
+                        });
+                });
+
+            modelBuilder.Entity("CheapNights.Models.Group", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IconName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ThemeColor")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ThemePreset")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Groups");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Survival horror roadmap — Resident Evil & Silent Hill",
+                            IconName = "Theaters",
+                            Name = "Horror Nights",
+                            ThemeColor = "#c0392b",
+                            ThemePreset = "horror-dark"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Schedule 1 gaming sessions",
+                            IconName = "SportsEsports",
+                            Name = "Schedule 1",
+                            ThemeColor = "#4caf50",
+                            ThemePreset = "forest"
+                        });
+                });
+
+            modelBuilder.Entity("CheapNights.Models.GroupMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nickname")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("GroupId", "AppUserId")
+                        .IsUnique();
+
+                    b.ToTable("GroupMembers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AppUserId = 1,
+                            GroupId = 1,
+                            Nickname = "brecht"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AppUserId = 2,
+                            GroupId = 1,
+                            Nickname = "pieter"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AppUserId = 1,
+                            GroupId = 2,
+                            Nickname = "brecht"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AppUserId = 3,
+                            GroupId = 2,
+                            Nickname = "miel"
+                        });
+                });
+
+            modelBuilder.Entity("CheapNights.Models.MemberGamePlatform", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GameEntryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GroupMemberId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlatformId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameEntryId");
+
+                    b.HasIndex("PlatformId");
+
+                    b.HasIndex("GroupMemberId", "GameEntryId")
+                        .IsUnique();
+
+                    b.ToTable("MemberGamePlatforms");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            GameEntryId = 5,
+                            GroupMemberId = 1,
+                            PlatformId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            GameEntryId = 14,
+                            GroupMemberId = 1,
+                            PlatformId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            GameEntryId = 17,
+                            GroupMemberId = 1,
+                            PlatformId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            GameEntryId = 23,
+                            GroupMemberId = 1,
+                            PlatformId = 3
+                        },
+                        new
+                        {
+                            Id = 5,
+                            GameEntryId = 1,
+                            GroupMemberId = 2,
+                            PlatformId = 2
+                        },
+                        new
+                        {
+                            Id = 6,
+                            GameEntryId = 2,
+                            GroupMemberId = 2,
+                            PlatformId = 2
+                        },
+                        new
+                        {
+                            Id = 7,
+                            GameEntryId = 3,
+                            GroupMemberId = 2,
+                            PlatformId = 2
+                        },
+                        new
+                        {
+                            Id = 8,
+                            GameEntryId = 21,
+                            GroupMemberId = 2,
+                            PlatformId = 2
                         });
                 });
 
@@ -697,6 +977,9 @@ namespace CheapNights.Migrations
                     b.Property<int?>("GameEntryId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("StatusNote")
                         .HasColumnType("text");
 
@@ -707,6 +990,9 @@ namespace CheapNights.Migrations
 
                     b.HasIndex("GameEntryId");
 
+                    b.HasIndex("GroupId")
+                        .IsUnique();
+
                     b.ToTable("NowPlaying");
 
                     b.HasData(
@@ -714,8 +1000,15 @@ namespace CheapNights.Migrations
                         {
                             Id = 1,
                             GameEntryId = 1,
+                            GroupId = 1,
                             StatusNote = "almost finished, Arc reached",
                             UpdatedAt = new DateTime(2026, 3, 13, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            GroupId = 2,
+                            UpdatedAt = new DateTime(2026, 3, 29, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -733,12 +1026,14 @@ namespace CheapNights.Migrations
                     b.Property<int?>("GameEntryId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("HostMemberId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
@@ -752,6 +1047,10 @@ namespace CheapNights.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GameEntryId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("HostMemberId");
 
                     b.ToTable("PlannedSessions");
                 });
@@ -878,6 +1177,17 @@ namespace CheapNights.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CheapNights.Models.Category", b =>
+                {
+                    b.HasOne("CheapNights.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("CheapNights.Models.GameEntry", b =>
                 {
                     b.HasOne("CheapNights.Models.Category", "Category")
@@ -892,13 +1202,11 @@ namespace CheapNights.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CheapNights.Models.Platform", "PlatformBrecht")
+                    b.HasOne("CheapNights.Models.Group", "Group")
                         .WithMany()
-                        .HasForeignKey("PlatformBrechtId");
-
-                    b.HasOne("CheapNights.Models.Platform", "PlatformPieter")
-                        .WithMany()
-                        .HasForeignKey("PlatformPieterId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CheapNights.Models.Status", "Status")
                         .WithMany()
@@ -908,11 +1216,55 @@ namespace CheapNights.Migrations
 
                     b.Navigation("EntryType");
 
-                    b.Navigation("PlatformBrecht");
-
-                    b.Navigation("PlatformPieter");
+                    b.Navigation("Group");
 
                     b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("CheapNights.Models.GroupMember", b =>
+                {
+                    b.HasOne("CheapNights.Models.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CheapNights.Models.Group", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("CheapNights.Models.MemberGamePlatform", b =>
+                {
+                    b.HasOne("CheapNights.Models.GameEntry", "GameEntry")
+                        .WithMany("MemberPlatforms")
+                        .HasForeignKey("GameEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CheapNights.Models.GroupMember", "GroupMember")
+                        .WithMany()
+                        .HasForeignKey("GroupMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CheapNights.Models.Platform", "Platform")
+                        .WithMany()
+                        .HasForeignKey("PlatformId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameEntry");
+
+                    b.Navigation("GroupMember");
+
+                    b.Navigation("Platform");
                 });
 
             modelBuilder.Entity("CheapNights.Models.NowPlaying", b =>
@@ -921,7 +1273,15 @@ namespace CheapNights.Migrations
                         .WithMany()
                         .HasForeignKey("GameEntryId");
 
+                    b.HasOne("CheapNights.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("GameEntry");
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("CheapNights.Models.PlannedSession", b =>
@@ -930,7 +1290,31 @@ namespace CheapNights.Migrations
                         .WithMany()
                         .HasForeignKey("GameEntryId");
 
+                    b.HasOne("CheapNights.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CheapNights.Models.GroupMember", "HostMember")
+                        .WithMany()
+                        .HasForeignKey("HostMemberId");
+
                     b.Navigation("GameEntry");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("HostMember");
+                });
+
+            modelBuilder.Entity("CheapNights.Models.GameEntry", b =>
+                {
+                    b.Navigation("MemberPlatforms");
+                });
+
+            modelBuilder.Entity("CheapNights.Models.Group", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

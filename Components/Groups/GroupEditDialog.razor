@@ -1,0 +1,126 @@
+@inject GroupRepo GroupRepo
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField T="string" Label="Group Name" @bind-Value="_name" Variant="Variant.Outlined"
+                      Placeholder="Horror Nights, Schedule 1..." />
+        <MudTextField T="string" Label="Description" @bind-Value="_description" Variant="Variant.Outlined"
+                      Placeholder="What's this group about?" Lines="2" Class="mt-3" />
+
+        <MudText Typo="Typo.caption" Class="mt-4 mb-2" Style="color:var(--text-dim); letter-spacing:2px;">THEME PRESET</MudText>
+        <div class="d-flex gap-2" style="flex-wrap:wrap;">
+            @foreach (var preset in ThemePresets.All.Values)
+            {
+                var isSelected = _themePreset == preset.Name;
+                <MudPaper Class="pa-2 cursor-pointer rounded"
+                          Style="@GetPresetCardStyle(preset, isSelected)"
+                          @onclick="@(() => SelectPreset(preset))">
+                    <div class="d-flex align-center gap-2">
+                        <div style="width:16px; height:16px; border-radius:50%; background:@preset.Primary;"></div>
+                        <div style="width:8px; height:8px; border-radius:50%; background:@preset.Secondary;"></div>
+                    </div>
+                    <MudText Typo="Typo.caption" Class="mt-1"
+                             Style="@($"color:{(preset.IsDarkMode ? "#ccc" : "#333")}; font-size:10px;")">
+                        @preset.DisplayName
+                    </MudText>
+                </MudPaper>
+            }
+        </div>
+
+        @* Preview strip *@
+        @if (_activePresetPreview is not null)
+        {
+            <div class="mt-3 pa-3 rounded" style="@GetPreviewStyle()">
+                <div class="d-flex align-center gap-2 mb-1">
+                    <div style="width:100%; height:4px; border-radius:2px; background:linear-gradient(90deg, @_activePresetPreview.GradientStart, @_activePresetPreview.GradientMid, @_activePresetPreview.GradientEnd);"></div>
+                </div>
+                <div class="d-flex gap-2 mt-2">
+                    <div style="width:24px; height:24px; border-radius:4px; background:@_activePresetPreview.Surface; border:1px solid @_activePresetPreview.Border;"></div>
+                    <div style="width:24px; height:24px; border-radius:4px; background:@_activePresetPreview.Surface2; border:1px solid @_activePresetPreview.Border;"></div>
+                    <div style="width:24px; height:24px; border-radius:4px; background:@_activePresetPreview.Dark; border:1px solid @_activePresetPreview.Border;"></div>
+                    <div style="flex:1;"></div>
+                    <MudText Typo="Typo.caption" Style="@($"color:{_activePresetPreview.TextPrimary};")">Aa</MudText>
+                    <MudText Typo="Typo.caption" Style="@($"color:{_activePresetPreview.TextSecondary};")">Aa</MudText>
+                </div>
+            </div>
+        }
+
+        <MudColorPicker Label="Primary Color Override" @bind-Text="_themeColor" Style="width:100%;"
+                        Variant="Variant.Outlined" Disablealpha="true" ColorPickerMode="ColorPickerMode.HEX"
+                        Class="mt-3" />
+        <MudText Typo="Typo.caption" Style="color:var(--text-dim);">
+            Overrides the preset's primary color. Leave as preset default if you don't want a custom color.
+        </MudText>
+
+        <MudTextField T="string" Label="Icon (Material)" @bind-Value="_iconName" Variant="Variant.Outlined"
+                      Placeholder="Theaters, SportsEsports, Casino..." Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Group? ExistingGroup { get; set; }
+
+    private string _name = "";
+    private string? _description;
+    private string _themeColor = "#c0392b";
+    private string _themePreset = "horror-dark";
+    private string? _iconName;
+    private ThemePalette? _activePresetPreview;
+
+    protected override void OnInitialized()
+    {
+        if (ExistingGroup is not null)
+        {
+            _name = ExistingGroup.Name;
+            _description = ExistingGroup.Description;
+            _themeColor = ExistingGroup.ThemeColor ?? "#c0392b";
+            _themePreset = ExistingGroup.ThemePreset;
+            _iconName = ExistingGroup.IconName;
+        }
+        _activePresetPreview = ThemePresets.Get(_themePreset);
+    }
+
+    private void SelectPreset(ThemePalette preset)
+    {
+        _themePreset = preset.Name;
+        _themeColor = preset.Primary;
+        _activePresetPreview = preset;
+    }
+
+    private string GetPresetCardStyle(ThemePalette preset, bool isSelected)
+    {
+        var bg = preset.IsDarkMode ? preset.Background : preset.Surface;
+        var border = isSelected ? preset.Primary : (preset.IsDarkMode ? "#333" : "#ccc");
+        var borderWidth = isSelected ? "2px" : "1px";
+        return $"background:{bg}; border:{borderWidth} solid {border}; min-width:80px;";
+    }
+
+    private string GetPreviewStyle() =>
+        _activePresetPreview is not null
+            ? $"background:{_activePresetPreview.Background}; border:1px solid {_activePresetPreview.Border};"
+            : "";
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(_name)) return;
+
+        var group = ExistingGroup ?? new Group { CreatedAt = DateTime.UtcNow };
+        group.Name = _name.Trim();
+        group.Description = string.IsNullOrWhiteSpace(_description) ? null : _description.Trim();
+        group.ThemeColor = _themeColor;
+        group.ThemePreset = _themePreset;
+        group.IconName = string.IsNullOrWhiteSpace(_iconName) ? null : _iconName.Trim();
+
+        await GroupRepo.SaveGroupAsync(group);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

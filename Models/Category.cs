@@ -9,4 +9,7 @@ public class Category : IEntityCode
     public string Name { get; set; } = "";
     public string? BadgeColor { get; set; }
     public int SortOrder { get; set; }
+
+    public int GroupId { get; set; }
+    public Group? Group { get; set; }
 }

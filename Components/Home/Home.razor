@@ -3,65 +3,115 @@
 @implements IDisposable
 @inject NowPlayingRepo NowPlayingRepo
 @inject NowPlayingService NowPlayingService
+@inject GroupRepo GroupRepo
+@inject ActiveGroupService ActiveGroupService
 
-<PageTitle>Horror Roadmap</PageTitle>
+<PageTitle>@(_groupName ?? "CheapNights")</PageTitle>
 
-<!-- HEADER -->
-<div class="horror-header mb-20">
-	<MudText Typo="Typo.overline" Class="mb-4" Style="letter-spacing:8px;">Co-op Horror Playthrough · 2026</MudText>
-	<div class="horror-title mb-5">SURVIVAL HORROR<br />ROADMAP</div>
-	<MudText Typo="Typo.caption" Class="header-sub">A reverse journey through the classics</MudText>
-	<div class="header-line mt-7"><span>◈ TWO PLAYERS ◈</span></div>
-</div>
+@if (ActiveGroupService.ActiveGroup is null)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <!-- HEADER -->
+    <div class="horror-header mb-20">
+        <MudText Typo="Typo.overline" Class="mb-4" Style="letter-spacing:8px;">@_groupDescription</MudText>
+        <div class="horror-title mb-5">@_groupName?.ToUpperInvariant()</div>
+        <MudText Typo="Typo.caption" Class="header-sub">@_memberLabel</MudText>
+        <div class="header-line mt-7"><span>◈ @_memberCount PLAYERS ◈</span></div>
+    </div>
 
-<!-- NOW PLAYING -->
-<NowPlayingBar />
+    <!-- NOW PLAYING -->
+    <NowPlayingBar />
 
-<!-- SESSION PLANNER -->
-<SessionCalendar />
+    <!-- SESSION PLANNER -->
+    <SessionCalendar />
 
-<!-- RESIDENT EVIL -->
-<RoadmapTable CategoryId="1" Title="Resident Evil" PublisherLabel="Capcom" NowPlayingGameId="_nowPlayingGameId" />
+    <!-- CATEGORY ROADMAPS -->
+    @foreach (var category in _categories)
+    {
+        <RoadmapTable CategoryId="category.Id" Title="@category.Name"
+                      PublisherLabel="@category.Code" NowPlayingGameId="_nowPlayingGameId" />
+    }
 
-<!-- SILENT HILL -->
-<RoadmapTable CategoryId="2" Title="Silent Hill" PublisherLabel="Konami" NowPlayingGameId="_nowPlayingGameId" />
-
-<!-- LEGEND -->
-<div class="d-flex flex-wrap gap-4 mt-12 pt-6 border-t border-solid" style="border-color:var(--border)">
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--done-gold)"></div> <MudText Typo="Typo.caption">Finished / In Progress</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#3a86ff"></div> <MudText Typo="Typo.caption">Now Playing</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--re-red)"></div> <MudText Typo="Typo.caption">RE Essential</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--sh-teal)"></div> <MudText Typo="Typo.caption">SH Essential</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#888"></div> <MudText Typo="Typo.caption">Recommended</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--upcoming)"></div> <MudText Typo="Typo.caption">Upcoming / Rumored</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--skip-grey)"></div> <MudText Typo="Typo.caption">Skip</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--couch)"></div> <MudText Typo="Typo.caption">Couch Co-op</MudText></div>
-	<div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#b8976a"></div> <MudText Typo="Typo.caption">Movie / Film</MudText></div>
-</div>
+    <!-- LEGEND -->
+    <div class="d-flex flex-wrap gap-4 mt-12 pt-6 border-t border-solid" style="border-color:var(--border)">
+        <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--done-gold)"></div> <MudText Typo="Typo.caption">Finished / In Progress</MudText></div>
+        <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#3a86ff"></div> <MudText Typo="Typo.caption">Now Playing</MudText></div>
+        @foreach (var category in _categories)
+        {
+            <div class="d-flex align-center gap-2">
+                <div class="legend-dot" style="background:var(--@(category.BadgeColor)-accent, var(--re-red))"></div>
+                <MudText Typo="Typo.caption">@category.Name Essential</MudText>
+            </div>
+        }
+        <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#888"></div> <MudText Typo="Typo.caption">Recommended</MudText></div>
+        <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--upcoming)"></div> <MudText Typo="Typo.caption">Upcoming / Rumored</MudText></div>
+        <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--skip-grey)"></div> <MudText Typo="Typo.caption">Skip</MudText></div>
+        <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:var(--couch)"></div> <MudText Typo="Typo.caption">Couch Co-op</MudText></div>
+        <div class="d-flex align-center gap-2"><div class="legend-dot" style="background:#b8976a"></div> <MudText Typo="Typo.caption">Movie / Film</MudText></div>
+    </div>
+}
 
 @code {
-	private int? _nowPlayingGameId;
+    private int? _nowPlayingGameId;
+    private string? _groupName;
+    private string? _groupDescription;
+    private string? _memberLabel;
+    private string _memberCount = "";
+    private List<Category> _categories = [];
 
-	protected override async Task OnInitializedAsync()
-	{
-		NowPlayingService.OnChange += OnNowPlayingChanged;
-		await LoadNowPlaying();
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        NowPlayingService.OnChange += OnNowPlayingChanged;
+        ActiveGroupService.OnGroupChanged += OnGroupChanged;
+        await LoadGroupData();
+    }
 
-	private async Task OnNowPlayingChanged()
-	{
-		await LoadNowPlaying();
-		await InvokeAsync(StateHasChanged);
-	}
+    private async Task OnGroupChanged()
+    {
+        await LoadGroupData();
+        await InvokeAsync(StateHasChanged);
+    }
 
-	private async Task LoadNowPlaying()
-	{
-		var np = await NowPlayingRepo.GetCurrentAsync();
-		_nowPlayingGameId = np?.GameEntryId;
-	}
+    private async Task OnNowPlayingChanged()
+    {
+        await LoadNowPlaying();
+        await InvokeAsync(StateHasChanged);
+    }
 
-	public void Dispose()
-	{
-		NowPlayingService.OnChange -= OnNowPlayingChanged;
-	}
+    private async Task LoadGroupData()
+    {
+        var group = ActiveGroupService.ActiveGroup;
+        if (group is null) return;
+
+        _groupName = group.Name;
+        _groupDescription = group.Description ?? $"{group.Name} · {DateTime.Now.Year}";
+        var members = ActiveGroupService.Members;
+        _memberLabel = string.Join(" & ", members.Select(m => m.AppUser?.DisplayName ?? m.Nickname ?? "?"));
+        _memberCount = members.Count switch
+        {
+            2 => "TWO",
+            3 => "THREE",
+            4 => "FOUR",
+            _ => members.Count.ToString()
+        };
+
+        _categories = await GroupRepo.GetCategoriesAsync(group.Id);
+        await LoadNowPlaying();
+    }
+
+    private async Task LoadNowPlaying()
+    {
+        if (ActiveGroupService.GroupId == 0) return;
+        var np = await NowPlayingRepo.GetCurrentAsync(ActiveGroupService.GroupId);
+        _nowPlayingGameId = np?.GameEntryId;
+    }
+
+    public void Dispose()
+    {
+        NowPlayingService.OnChange -= OnNowPlayingChanged;
+        ActiveGroupService.OnGroupChanged -= OnGroupChanged;
+    }
 }

@@ -7,6 +7,9 @@ public class GameEntry : IEntityId
     public int Id { get; set; }
     public string Name { get; set; } = "";
 
+    public int GroupId { get; set; }
+    public Group? Group { get; set; }
+
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
 
@@ -22,12 +25,6 @@ public class GameEntry : IEntityId
     public int StarRating { get; set; }
     public string? LengthLabel { get; set; }
 
-    public int? PlatformBrechtId { get; set; }
-    public Platform? PlatformBrecht { get; set; }
-
-    public int? PlatformPieterId { get; set; }
-    public Platform? PlatformPieter { get; set; }
-
     public bool IsCouchCoop { get; set; }
     public bool IsMovie { get; set; }
     public string? SortLabel { get; set; }
@@ -36,4 +33,6 @@ public class GameEntry : IEntityId
     public DateTime? CompletedAt { get; set; }
     public string? CompletedTime { get; set; }
     public string? GameNote { get; set; }
+
+    public List<MemberGamePlatform> MemberPlatforms { get; set; } = [];
 }

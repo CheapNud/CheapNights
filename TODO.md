@@ -1,6 +1,6 @@
 <!--
   TODO.md — CheapNights project work tracker
-  Last updated: 2026-03-28
+  Last updated: 2026-04-04
 
   RULES FOR AI AGENTS:
   - Update the "Last updated" date above whenever you modify this file
@@ -28,7 +28,7 @@
 
 ## Blocking
 
-- [ ] (2026-03-28) Migrate local Plex auth to CheapHelpers shared provider [user]
+- [x] (2026-03-28 → 2026-04-04) Migrate local Plex auth to CheapHelpers shared provider [user]
   - Remove `Services/PlexAuthService.cs`, `Helpers/AuthEndpoints.cs`, `Helpers/PlexConstants.cs`
   - Remove `DTOs/PlexPinResponse.cs`, `DTOs/PlexUserInfo.cs`
   - Add CheapHelpers.Services + CheapHelpers.Blazor references
@@ -36,14 +36,33 @@
 
 ## Planned
 
+- [x] (2026-03-29 → 2026-04-04) Create production migration for multi-group schema [plan]
+  - Incremental migration with 4-phase data preservation (nullable → migrate → constrain → drop)
+  - Tested on cloned DB, applied to production
+
+- [x] (2026-03-29 → 2026-04-04) Wire Plex auth to create/lookup AppUser on login [plan]
+  - AuthorizeUser hook calls `AppUserRepo.GetOrCreateAsync()` with Plex claims
+  - Currently seeded with placeholder PlexUserIds — replace with real Plex IDs on first login
+
 - [ ] (2026-03-31) Add all live-action Resident Evil films to GameEntry seed data in current sort order [user]
   - Paul W.S. Anderson series (2002-2016): RE, Apocalypse, Extinction, Afterlife, Retribution, The Final Chapter
   - Welcome to Raccoon City (2021)
 
+- [x] (2026-03-29 → 2026-04-04) Add CSS vars for Schedule 1 badge color [plan]
+  - `--s1-green`, `--s1-green-dim`, `--s1-green-glow` + section badge/title/divider/stripe classes
+
 ## Future
 
-_Nothing yet._
+- [ ] (2026-03-29) Group invitation system (share link or Plex friend picker) [plan]
+- [ ] (2026-03-29) Per-group notification preferences [plan]
+- [ ] (2026-03-29) Group activity feed / history log [plan]
+- [ ] (2026-03-29) Archive/soft-delete completed groups [plan]
 
 ## Done
 
-_Tracked in release notes._
+- [x] (2026-03-29 → 2026-03-29) Phase 1: Create AppUser, Group, GroupMember, MemberGamePlatform entities [plan]
+- [x] (2026-03-29 → 2026-03-29) Phase 2: Add GroupId FKs to GameEntry, Category, PlannedSession, NowPlaying + migrate seed data [plan]
+- [x] (2026-03-29 → 2026-03-29) Phase 3: Rename HorrorDbContext → CheapNightsDbContext, drop PlatformBrechtId/PieterId, drop Location, remove Players constants [plan]
+- [x] (2026-03-29 → 2026-03-29) Phase 4: Refactor all repos/services to be group-scoped, create GroupRepo + AppUserRepo + ActiveGroupService [plan]
+- [x] (2026-03-29 → 2026-03-29) Phase 5: UI refactoring — group selector in layout, dynamic titles/members/platforms/locations across all components [plan]
+- [x] (2026-03-29 → 2026-03-29) Phase 6: Group management page (/groups) with create/edit dialogs, Schedule 1 group seeded with Brecht + Miel [plan]

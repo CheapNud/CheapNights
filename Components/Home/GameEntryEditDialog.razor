@@ -1,6 +1,8 @@
 @inject RoadmapService RoadmapService
 @inject StatusRepo StatusRepo
-@inject IDbContextFactory<CheapNights.Data.HorrorDbContext> DbFactory
+@inject GroupRepo GroupRepo
+@inject ActiveGroupService ActiveGroupService
+@inject IDbContextFactory<CheapNights.Data.CheapNightsDbContext> DbFactory
 
 <MudDialog>
     <TitleContent>
@@ -69,16 +71,18 @@
                 <MudNumericField T="int" Label="Sort Order" @bind-Value="Entry.SortOrder" Variant="Variant.Outlined" />
             </MudItem>
 
-            <MudItem xs="12" sm="6">
-                <Selector C="Platform" Items="_platforms" Label="Platform (Brecht)"
-                          DisplayProp="@(p => p.Name)" Value="Entry.PlatformBrecht"
-                          ValueChanged="OnPlatformBrechtChanged" DisplayPropFallback="— None —" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <Selector C="Platform" Items="_platforms" Label="Platform (Pieter)"
-                          DisplayProp="@(p => p.Name)" Value="Entry.PlatformPieter"
-                          ValueChanged="OnPlatformPieterChanged" DisplayPropFallback="— None —" />
-            </MudItem>
+            @foreach (var member in _members)
+            {
+                var memberId = member.Id;
+                var displayName = member.AppUser?.DisplayName ?? member.Nickname ?? "?";
+                <MudItem xs="12" sm="@(12 / Math.Max(_members.Count, 1))">
+                    <Selector C="Platform" Items="_platforms" Label="@($"Platform ({displayName})")"
+                              DisplayProp="@(p => p.Name)"
+                              Value="GetMemberPlatform(memberId)"
+                              ValueChanged="@(p => OnMemberPlatformChanged(memberId, p))"
+                              DisplayPropFallback="— None —" />
+                </MudItem>
+            }
 
             <MudItem xs="4">
                 <MudSwitch T="bool" @bind-Value="Entry.IsMovie" Label="Movie/Film" Color="Color.Info" />
@@ -121,18 +125,36 @@
     private List<Category> _categories = [];
     private List<EntryType> _entryTypes = [];
     private List<Platform> _platforms = [];
+    private List<GroupMember> _members = [];
+    private Dictionary<int, Platform?> _memberPlatformSelections = [];
 
     protected override async Task OnInitializedAsync()
     {
+        _members = ActiveGroupService.Members;
         _statuses = await StatusRepo.GetSelectableAsync();
+        _categories = await GroupRepo.GetCategoriesAsync(ActiveGroupService.GroupId);
 
         await using var db = DbFactory.CreateDbContext();
-        _categories = await db.Categories.OrderBy(c => c.SortOrder).AsNoTracking().ToListAsync();
         _entryTypes = await db.EntryTypes.OrderBy(e => e.SortOrder).AsNoTracking().ToListAsync();
         _platforms = await db.Platforms.OrderBy(p => p.SortOrder).AsNoTracking().ToListAsync();
 
+        foreach (var member in _members)
+        {
+            var memberPlatform = Entry.MemberPlatforms
+                .FirstOrDefault(mp => mp.GroupMemberId == member.Id);
+            _memberPlatformSelections[member.Id] = memberPlatform?.Platform;
+        }
+
         _completedDate = Entry.CompletedAt;
         _loaded = true;
+    }
+
+    private Platform? GetMemberPlatform(int memberId) =>
+        _memberPlatformSelections.GetValueOrDefault(memberId);
+
+    private void OnMemberPlatformChanged(int memberId, Platform platform)
+    {
+        _memberPlatformSelections[memberId] = platform;
     }
 
     private void OnCategoryChanged(Category cat)
@@ -153,18 +175,6 @@
         Entry.StatusId = status?.Id;
     }
 
-    private void OnPlatformBrechtChanged(Platform platform)
-    {
-        Entry.PlatformBrecht = platform;
-        Entry.PlatformBrechtId = platform?.Id;
-    }
-
-    private void OnPlatformPieterChanged(Platform platform)
-    {
-        Entry.PlatformPieter = platform;
-        Entry.PlatformPieterId = platform?.Id;
-    }
-
     private async Task Save()
     {
         if (Entry.IsCompleted)
@@ -180,6 +190,12 @@
         }
 
         await RoadmapService.SaveEntryAsync(Entry);
+
+        foreach (var (memberId, platform) in _memberPlatformSelections)
+        {
+            await RoadmapService.SaveMemberPlatformAsync(Entry.Id, memberId, platform?.Id);
+        }
+
         MudDialog.Close(DialogResult.Ok(true));
     }
 

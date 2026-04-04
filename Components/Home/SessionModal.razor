@@ -1,6 +1,7 @@
 @inject SessionService SessionService
 @inject GameEntryRepo GameEntryRepo
 @inject NowPlayingRepo NowPlayingRepo
+@inject ActiveGroupService ActiveGroupService
 
 <MudDialog>
     <DialogContent>
@@ -10,6 +11,44 @@
         }
         else
         {
+            @* Show sessions from OTHER groups on this date as read-only info *@
+            @if (_otherGroupSessions.Count > 0)
+            {
+                <MudText Typo="Typo.overline" Class="mb-2" Style="letter-spacing:2px; color:var(--text-dim);">
+                    OTHER GROUPS ON THIS DATE
+                </MudText>
+                @foreach (var otherSession in _otherGroupSessions)
+                {
+                    var groupColor = otherSession.Group?.ThemeColor ?? "#888";
+                    var groupName = otherSession.Group?.Name ?? "?";
+                    var gameName = otherSession.UseCurrentGame
+                        ? (_otherNowPlayingNames.GetValueOrDefault(otherSession.GroupId) ?? "Now Playing")
+                        : (otherSession.GameEntry?.Name ?? otherSession.CustomGame ?? "TBD");
+                    var hostName = otherSession.HostMember?.AppUser?.DisplayName
+                        ?? otherSession.HostMember?.Nickname ?? "?";
+
+                    <div class="d-flex align-center gap-3 pa-3 rounded mb-2"
+                         style="background:var(--surface2); border-left:3px solid @groupColor; opacity:0.7;">
+                        <div>
+                            <div class="d-flex align-center gap-2 mb-1">
+                                <div style="width:8px; height:8px; border-radius:50%; background:@groupColor;"></div>
+                                <MudText Typo="Typo.caption" Style="@($"color:{groupColor}; font-weight:600;")">@groupName</MudText>
+                            </div>
+                            <MudText Typo="Typo.body2">
+                                @otherSession.ScheduledAt.ToString("HH:mm") — @gameName
+                            </MudText>
+                            <MudText Typo="Typo.caption" Style="color:var(--text-dim);">
+                                @hostName's place
+                            </MudText>
+                        </div>
+                    </div>
+                }
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.overline" Class="mb-2" Style="letter-spacing:2px; color:var(--text-dim);">
+                    @(ActiveGroupService.ActiveGroup?.Name?.ToUpper() ?? "ACTIVE GROUP")
+                </MudText>
+            }
+
             <MudTimePicker Label="Time" @bind-Time="_selectedTime" Variant="Variant.Outlined" />
 
             <MudSwitch T="bool" @bind-Value="_useCurrentGame" Label="Follow Now Playing" Color="Color.Primary" Class="mt-3" />
@@ -30,9 +69,12 @@
             }
 
             <MudText Typo="Typo.caption" Class="mt-3 mb-2" Style="color:var(--text-dim)">LOCATION</MudText>
-            <MudToggleGroup T="string" @bind-Value="_location" Style="margin-bottom:16px;">
-                <MudToggleItem T="string" Value="@(GameConstants.Players.BrechtKey)">🏠 @(GameConstants.Players.Brecht)'s place</MudToggleItem>
-                <MudToggleItem T="string" Value="@(GameConstants.Players.PieterKey)">🏠 @(GameConstants.Players.Pieter)'s place</MudToggleItem>
+            <MudToggleGroup T="int?" @bind-Value="_hostMemberId" Style="margin-bottom:16px;">
+                @foreach (var member in _members)
+                {
+                    var displayName = member.AppUser?.DisplayName ?? member.Nickname ?? "?";
+                    <MudToggleItem T="int?" Value="@((int?)member.Id)">🏠 @(displayName)'s place</MudToggleItem>
+                }
             </MudToggleGroup>
 
             <MudTextField T="string" Label="Notes" @bind-Value="_notes" Lines="3"
@@ -58,27 +100,47 @@
 
     private bool _loaded;
     private List<GameEntry> _games = [];
+    private List<GroupMember> _members = [];
     private GameEntry? _selectedGame;
     private TimeSpan? _selectedTime = GameConstants.Defaults.DefaultSessionTime;
-    private string _location = GameConstants.Players.BrechtKey;
+    private int? _hostMemberId;
     private string _notes = "";
     private bool _useCurrentGame = true;
     private string? _nowPlayingName;
     private PlannedSession? _existingSession;
+    private List<PlannedSession> _otherGroupSessions = [];
+    private Dictionary<int, string?> _otherNowPlayingNames = [];
 
     protected override async Task OnInitializedAsync()
     {
-        _games = await GameEntryRepo.GetSelectableGamesAsync();
-        var np = await NowPlayingRepo.GetCurrentAsync();
+        var groupId = ActiveGroupService.GroupId;
+        _members = ActiveGroupService.Members;
+        _hostMemberId = _members.FirstOrDefault()?.Id;
+
+        _games = await GameEntryRepo.GetSelectableGamesAsync(groupId);
+        var np = await NowPlayingRepo.GetCurrentAsync(groupId);
         _nowPlayingName = np?.GameEntry?.Name;
 
-        _existingSession = await SessionService.GetByDateAsync(SelectedDate);
+        // Load all sessions on this date across all groups
+        var allGroupIds = ActiveGroupService.AllGroupIds.ToList();
+        var allDateSessions = await SessionService.GetByDateAllGroupsAsync(allGroupIds, SelectedDate);
+
+        _existingSession = allDateSessions.FirstOrDefault(s => s.GroupId == groupId);
+        _otherGroupSessions = allDateSessions.Where(s => s.GroupId != groupId).ToList();
+
+        // Load now-playing names for other groups (for display)
+        if (_otherGroupSessions.Count > 0)
+        {
+            var otherGroupIds = _otherGroupSessions.Select(s => s.GroupId).Distinct();
+            _otherNowPlayingNames = await NowPlayingRepo.GetNowPlayingNamesAsync(otherGroupIds);
+        }
+
         if (_existingSession is not null)
         {
             _useCurrentGame = _existingSession.UseCurrentGame;
             _selectedGame = _games.FirstOrDefault(g => g.Id == _existingSession.GameEntryId);
             _selectedTime = _existingSession.ScheduledAt.TimeOfDay;
-            _location = _existingSession.Location;
+            _hostMemberId = _existingSession.HostMemberId;
             _notes = _existingSession.Notes ?? "";
         }
         _loaded = true;
@@ -91,13 +153,14 @@
 
     private async Task Save()
     {
+        var groupId = ActiveGroupService.GroupId;
         var scheduledAt = DateTime.SpecifyKind(SelectedDate.Date + (_selectedTime ?? GameConstants.Defaults.DefaultSessionTime), DateTimeKind.Utc);
-        var session = _existingSession ?? new PlannedSession { Location = _location };
+        var session = _existingSession ?? new PlannedSession { GroupId = groupId };
 
         session.ScheduledAt = scheduledAt;
         session.UseCurrentGame = _useCurrentGame;
         session.GameEntryId = _useCurrentGame ? null : _selectedGame?.Id;
-        session.Location = _location;
+        session.HostMemberId = _hostMemberId;
         session.Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes;
         session.CustomGame = !_useCurrentGame && _selectedGame is null ? GameConstants.Defaults.DefaultCustomGame : null;
 

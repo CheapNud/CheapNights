@@ -1,0 +1,145 @@
+@page "/groups"
+@attribute [Authorize]
+@inject GroupRepo GroupRepo
+@inject AppUserRepo AppUserRepo
+@inject ActiveGroupService ActiveGroupService
+@inject IDialogService DialogService
+@inject IDbContextFactory<CheapNights.Data.CheapNightsDbContext> DbFactory
+
+<PageTitle>Groups — CheapNights</PageTitle>
+
+<div class="horror-header mb-12">
+    <div class="horror-title mb-5">GROUPS</div>
+    <MudText Typo="Typo.caption" Class="header-sub">Manage your gaming groups</MudText>
+</div>
+
+@if (!_loaded)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <div class="d-flex justify-end mb-6">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreateDialog"
+                   StartIcon="@Icons.Material.Filled.Add">
+            New Group
+        </MudButton>
+    </div>
+
+    @foreach (var group in _groups)
+    {
+        <MudCard Class="mb-6" Elevation="0" Style="background:#0f0f0f; border:1px solid #222;">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <div class="d-flex align-center gap-3">
+                        @if (!string.IsNullOrEmpty(group.ThemeColor))
+                        {
+                            <div style="width:12px; height:12px; border-radius:50%; background:@group.ThemeColor;"></div>
+                        }
+                        <MudText Typo="Typo.h6">@group.Name</MudText>
+                    </div>
+                    @if (!string.IsNullOrEmpty(group.Description))
+                    {
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@group.Description</MudText>
+                    }
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                   OnClick="@(() => OpenEditDialog(group))" />
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.overline" Class="mb-2" Style="letter-spacing:3px;">Members</MudText>
+                <div class="d-flex flex-wrap gap-3">
+                    @{
+                        var members = _groupMembers.GetValueOrDefault(group.Id, []);
+                    }
+                    @foreach (var member in members)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Style="border-color:#333; color:#aaa;">
+                            @(member.AppUser?.DisplayName ?? member.Nickname ?? "?")
+                            @if (!string.IsNullOrEmpty(member.Nickname) && member.Nickname != member.AppUser?.DisplayName?.ToLowerInvariant())
+                            {
+                                <span style="color:#555; margin-left:4px;">(@member.Nickname)</span>
+                            }
+                        </MudChip>
+                    }
+                </div>
+
+                <MudText Typo="Typo.overline" Class="mt-4 mb-2" Style="letter-spacing:3px;">Categories</MudText>
+                <div class="d-flex flex-wrap gap-3">
+                    @{
+                        var categories = _groupCategories.GetValueOrDefault(group.Id, []);
+                    }
+                    @foreach (var cat in categories)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                 Style="@($"background:var(--{cat.BadgeColor}-accent, #333); color:#fff;")">
+                            @cat.Code — @cat.Name
+                        </MudChip>
+                    }
+                </div>
+            </MudCardContent>
+        </MudCard>
+    }
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool _loaded;
+    private int _currentUserId;
+    private List<Group> _groups = [];
+    private Dictionary<int, List<GroupMember>> _groupMembers = [];
+    private Dictionary<int, List<Category>> _groupCategories = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState is null) return;
+        var state = await AuthState;
+        var plexId = state.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (plexId is null) return;
+
+        var appUser = await AppUserRepo.GetByPlexIdAsync(plexId);
+        if (appUser is null) return;
+        _currentUserId = appUser.Id;
+
+        await LoadGroups();
+        _loaded = true;
+    }
+
+    private async Task LoadGroups()
+    {
+        _groups = await GroupRepo.GetGroupsForUserAsync(_currentUserId);
+        _groupMembers = [];
+        _groupCategories = [];
+
+        foreach (var group in _groups)
+        {
+            _groupMembers[group.Id] = await GroupRepo.GetMembersAsync(group.Id);
+            _groupCategories[group.Id] = await GroupRepo.GetCategoriesAsync(group.Id);
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<GroupEditDialog>("New Group", dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is not null && !dialogResult.Canceled)
+            await LoadGroups();
+    }
+
+    private async Task OpenEditDialog(Group group)
+    {
+        var parameters = new DialogParameters<GroupEditDialog> { { x => x.ExistingGroup, group } };
+        var dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<GroupEditDialog>(group.Name, parameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is not null && !dialogResult.Canceled)
+            await LoadGroups();
+    }
+}

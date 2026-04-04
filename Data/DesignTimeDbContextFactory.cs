@@ -4,9 +4,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace CheapNights.Data;
 
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<HorrorDbContext>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<CheapNightsDbContext>
 {
-    public HorrorDbContext CreateDbContext(string[] args)
+    public CheapNightsDbContext CreateDbContext(string[] args)
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
 
@@ -18,7 +18,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<HorrorDbCo
             .AddEnvironmentVariables()
             .Build();
 
-        var optionsBuilder = new DbContextOptionsBuilder<HorrorDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<CheapNightsDbContext>();
 
         if (environment == "Development")
         {
@@ -31,6 +31,6 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<HorrorDbCo
             optionsBuilder.UseNpgsql(pgConnection);
         }
 
-        return new HorrorDbContext(optionsBuilder.Options);
+        return new CheapNightsDbContext(optionsBuilder.Options);
     }
 }
