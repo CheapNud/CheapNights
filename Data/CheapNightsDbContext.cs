@@ -50,6 +50,11 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
             e.HasIndex(n => n.GroupId).IsUnique();
         });
 
+        modelBuilder.Entity<Group>(e =>
+        {
+            e.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId);
+        });
+
         modelBuilder.Entity<GroupMember>(e =>
         {
             e.HasOne(m => m.Group).WithMany(g => g.Members).HasForeignKey(m => m.GroupId);
@@ -80,8 +85,8 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
         // ═══════════════════════════════════════
 
         modelBuilder.Entity<Group>().HasData(
-            new Group { Id = 1, Name = "Horror Nights", Description = "Survival horror roadmap — Resident Evil & Silent Hill", ThemeColor = "#c0392b", ThemePreset = "horror-dark", IconName = "Theaters", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
-            new Group { Id = 2, Name = "Schedule 1", Description = "Schedule 1 gaming sessions", ThemeColor = "#4caf50", ThemePreset = "forest", IconName = "SportsEsports", CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
+            new Group { Id = 1, Name = "Horror Nights", Description = "Survival horror roadmap — Resident Evil & Silent Hill", ThemeColor = "#c0392b", ThemePreset = "horror-dark", IconName = "Theaters", OwnerId = 1, CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
+            new Group { Id = 2, Name = "Schedule 1", Description = "Schedule 1 gaming sessions", ThemeColor = "#4caf50", ThemePreset = "forest", IconName = "SportsEsports", OwnerId = 1, CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         // ═══════════════════════════════════════

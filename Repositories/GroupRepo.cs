@@ -10,10 +10,14 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
     public async Task<List<Group>> GetGroupsForUserAsync(int appUserId)
     {
         using var db = _factory.CreateDbContext();
-        return await db.GroupMembers
+        var groupIds = await db.GroupMembers
             .Where(m => m.AppUserId == appUserId)
-            .Include(m => m.Group)
-            .Select(m => m.Group!)
+            .Select(m => m.GroupId)
+            .ToListAsync();
+
+        return await db.Groups
+            .Include(g => g.Owner)
+            .Where(g => groupIds.Contains(g.Id))
             .OrderBy(g => g.Name)
             .AsNoTracking()
             .ToListAsync();
