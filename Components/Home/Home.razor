@@ -31,7 +31,8 @@ else
     <!-- CATEGORY ROADMAPS -->
     @foreach (var category in _categories)
     {
-        <RoadmapTable CategoryId="category.Id" Title="@category.Name"
+        <RoadmapTable @key="@($"{ActiveGroupService.GroupId}_{category.Id}")"
+                      CategoryId="category.Id" Title="@category.Name"
                       PublisherLabel="@category.Code" NowPlayingGameId="_nowPlayingGameId" />
     }
 
