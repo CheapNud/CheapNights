@@ -1,6 +1,6 @@
 <!--
   TODO.md — CheapNights project work tracker
-  Last updated: 2026-03-29
+  Last updated: 2026-04-04
 
   RULES FOR AI AGENTS:
   - Update the "Last updated" date above whenever you modify this file
@@ -28,7 +28,7 @@
 
 ## Blocking
 
-- [ ] (2026-03-28) Migrate local Plex auth to CheapHelpers shared provider [user]
+- [x] (2026-03-28 → 2026-04-04) Migrate local Plex auth to CheapHelpers shared provider [user]
   - Remove `Services/PlexAuthService.cs`, `Helpers/AuthEndpoints.cs`, `Helpers/PlexConstants.cs`
   - Remove `DTOs/PlexPinResponse.cs`, `DTOs/PlexUserInfo.cs`
   - Add CheapHelpers.Services + CheapHelpers.Blazor references
@@ -36,24 +36,20 @@
 
 ## Planned
 
-- [ ] (2026-03-29) Create production migration for multi-group schema [plan]
-  - Old migrations deleted (schema fundamentally changed)
-  - Need fresh migration before deploying to PostgreSQL
-  - Dev uses EnsureCreated (auto-recreates from new context)
-  - Requires careful data migration script for existing prod data
+- [x] (2026-03-29 → 2026-04-04) Create production migration for multi-group schema [plan]
+  - Incremental migration with 4-phase data preservation (nullable → migrate → constrain → drop)
+  - Tested on cloned DB, applied to production
 
-- [ ] (2026-03-29) Wire Plex auth to create/lookup AppUser on login [plan]
-  - AuthEndpoints callback should call `AppUserRepo.GetOrCreateAsync()` with Plex claims
-  - Store AppUser.Id in claims for downstream group lookups
-  - Currently seeded with placeholder PlexUserIds ("brecht", "pieter", "miel") — replace with real Plex IDs
+- [x] (2026-03-29 → 2026-04-04) Wire Plex auth to create/lookup AppUser on login [plan]
+  - AuthorizeUser hook calls `AppUserRepo.GetOrCreateAsync()` with Plex claims
+  - Currently seeded with placeholder PlexUserIds — replace with real Plex IDs on first login
 
 - [ ] (2026-03-31) Add all live-action Resident Evil films to GameEntry seed data in current sort order [user]
   - Paul W.S. Anderson series (2002-2016): RE, Apocalypse, Extinction, Afterlife, Retribution, The Final Chapter
   - Welcome to Raccoon City (2021)
 
-- [ ] (2026-03-29) Add CSS vars for Schedule 1 badge color [plan]
-  - `--s1-accent` color var in app.css for the S1 category badge
-  - Currently only `--re-red` and `--sh-teal` exist
+- [x] (2026-03-29 → 2026-04-04) Add CSS vars for Schedule 1 badge color [plan]
+  - `--s1-green`, `--s1-green-dim`, `--s1-green-glow` + section badge/title/divider/stripe classes
 
 ## Future
 

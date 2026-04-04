@@ -1,6 +1,8 @@
+using CheapHelpers.Blazor.Extensions;
+using CheapHelpers.Services.Auth.Plex;
+using CheapHelpers.Services.Auth.Plex.Extensions;
 using CheapNights.Components;
 using CheapNights.Data;
-using CheapNights.Helpers;
 using CheapNights.Repositories;
 using CheapNights.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -30,7 +32,31 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddHttpClient();
+
+builder.Services.AddPlexAuth(opts =>
+{
+    opts.ProductName = "CheapNights";
+    opts.ClientIdentifier = builder.Configuration["Plex:ClientId"] ?? "CheapNights";
+    opts.AdminToken = builder.Configuration["Plex:AdminToken"];
+    opts.CallbackBaseUrl = builder.Configuration["Plex:CallbackBaseUrl"];
+    opts.PinPollAttempts = 5;
+    opts.PinPollDelay = TimeSpan.FromSeconds(1);
+    opts.PostLogoutRedirect = "/login";
+    opts.AuthorizeUser = async (plexUser, sp, ct) =>
+    {
+        var plexAuth = sp.GetRequiredService<IPlexAuthService>();
+        if (!await plexAuth.HasServerAccessAsync(plexUser.Id, ct))
+            return false;
+
+        var appUserRepo = sp.GetRequiredService<AppUserRepo>();
+        await appUserRepo.GetOrCreateAsync(
+            plexUser.Id.ToString(),
+            plexUser.Username,
+            plexUser.Thumb);
+
+        return true;
+    };
+});
 builder.Services.AddDbContextFactory<CheapNightsDbContext>(opt =>
 {
     if (builder.Environment.IsDevelopment())
@@ -55,7 +81,6 @@ builder.Services.AddScoped<RoadmapService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<ActiveGroupService>();
 builder.Services.AddSingleton<NowPlayingService>();
-builder.Services.AddSingleton<PlexAuthService>();
 
 var app = builder.Build();
 
@@ -81,7 +106,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapAuthEndpoints();
+app.MapPlexAuthEndpoints();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

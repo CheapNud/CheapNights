@@ -8,6 +8,9 @@
     --sh-teal: #2a9d8f;
     --sh-teal-dim: #1a6b62;
     --sh-teal-glow: rgba(42, 157, 143, 0.25);
+    --s1-green: #4caf50;
+    --s1-green-dim: #2e7d32;
+    --s1-green-glow: rgba(76, 175, 80, 0.25);
     --done-gold: #f4a261;
     --done-gold-glow: rgba(244, 162, 97, 0.2);
     --skip-grey: #444;
@@ -120,13 +123,21 @@ body::after {
     box-shadow: 0 0 16px var(--sh-teal-glow);
     border: 1px solid var(--sh-teal);
 }
+.section-badge.s1 {
+    background: var(--s1-green-dim);
+    color: #81c784;
+    box-shadow: 0 0 16px var(--s1-green-glow);
+    border: 1px solid var(--s1-green);
+}
 
 .section-title-re { color: #e05a4a !important; }
 .section-title-sh { color: #4cc8be !important; }
+.section-title-s1 { color: #66bb6a !important; }
 
 .section-divider { height: 1px; }
 .section-divider.re { background: linear-gradient(90deg, var(--re-red-dim), transparent); }
 .section-divider.sh { background: linear-gradient(90deg, var(--sh-teal-dim), transparent); }
+.section-divider.s1 { background: linear-gradient(90deg, var(--s1-green-dim), transparent); }
 
 .gradient-title {
     background: linear-gradient(90deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
@@ -237,6 +248,7 @@ body::after {
 .stripe-done { border-left: 3px solid var(--done-gold) !important; }
 .stripe-essential-re { border-left: 3px solid var(--re-red) !important; }
 .stripe-essential-sh { border-left: 3px solid var(--sh-teal) !important; }
+.stripe-essential-s1 { border-left: 3px solid var(--s1-green) !important; }
 .stripe-skip { border-left: 3px solid var(--skip-grey) !important; }
 .stripe-upcoming { border-left: 3px solid var(--upcoming) !important; }
 .stripe-recommended { border-left: 3px solid #888 !important; }
