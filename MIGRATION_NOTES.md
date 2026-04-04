@@ -1,57 +1,85 @@
 # Migration: Groups Feature + Theme Preset
 
-## Current state
-- Production PostgreSQL has `20260314213953_InitialMigration` applied
-- Snapshot restored from `c5f2f32` and adapted for `CheapNightsDbContext`
-- Backup of broken migration at `../CheapNights_Migrations_backup/`
+## Context
 
-## Step 1: Generate the migration
+The groups feature (`31b7ca6`) deleted the old `InitialMigration` without generating a
+replacement. The old snapshot has been restored from `c5f2f32` and adapted for
+`CheapNightsDbContext`. Production PostgreSQL still has `20260314213953_InitialMigration`
+applied — the pre-groups schema.
 
-Run with Production environment so DesignTimeDbContextFactory uses Npgsql:
+Broken migration backup: `../CheapNights_Migrations_backup/`
+
+---
+
+## Next Steps (in order)
+
+### 1. Backup production database
+
+```bash
+pg_dump -Fc cheapnights > cheapnights_pre_groups_backup.dump
+```
+
+### 2. Generate incremental migration
+
+DesignTimeDbContextFactory uses Npgsql when environment != Development.
+This makes EF diff the old snapshot (pre-groups Npgsql schema) against the current model
+and generate proper ALTER/CREATE statements with PostgreSQL types.
 
 ```bash
 ASPNETCORE_ENVIRONMENT=Production dotnet ef migrations add GroupsAndThemePreset
 ```
 
-This should generate an incremental migration with:
-- CREATE TABLE: `AppUsers`, `Groups`, `GroupMembers`, `MemberGamePlatforms`
-- ALTER `Categories`: add `GroupId` (FK)
-- ALTER `GameEntries`: drop `PlatformBrechtId`/`PlatformPieterId`, add `GroupId` (FK)
-- ALTER `NowPlaying`: add `GroupId` (FK + unique index)
-- ALTER `PlannedSessions`: drop `Location`, add `GroupId` (FK) + `HostMemberId` (FK)
+Expected output — an incremental migration containing:
+- **CREATE TABLE**: `AppUsers`, `Groups`, `GroupMembers`, `MemberGamePlatforms`
+- **ALTER** `Categories`: add `GroupId` (FK)
+- **ALTER** `GameEntries`: drop `PlatformBrechtId`/`PlatformPieterId`, add `GroupId` (FK)
+- **ALTER** `NowPlaying`: add `GroupId` (FK + unique index)
+- **ALTER** `PlannedSessions`: drop `Location`, add `GroupId` (FK) + `HostMemberId` (FK)
 
-## Step 2: Add data migration SQL to the generated Up()
+If the migration instead generates full CREATE TABLE for everything — the snapshot
+restoration didn't work. Do NOT apply it. Investigate first.
 
-After EF generates the schema changes, add this SQL **before** any NOT NULL constraints
-or FK constraints are applied, and **after** the new tables are created.
+### 3. Restructure the generated Up() for data preservation
 
-The order matters — insert data before adding NOT NULL constraints on GroupId columns.
+EF doesn't know about existing data. The generated migration will likely try to add
+`GroupId` as NOT NULL directly, which fails on existing rows. Restructure `Up()` to:
 
-### Strategy: two-phase column addition
-EF will likely add GroupId as nullable first (since existing rows need values),
-then you set the data, then alter to NOT NULL. If EF generates it as NOT NULL directly,
-you'll need to restructure: add as nullable → populate → alter to NOT NULL.
+**Phase 1 — Create new tables**
+```
+CreateTable AppUsers
+CreateTable Groups
+CreateTable GroupMembers
+CreateTable MemberGamePlatforms
+```
 
-### Data migration SQL to inject:
+**Phase 2 — Add new columns as NULLABLE**
+
+If EF generated them as `nullable: false`, change to `nullable: true` temporarily:
+```
+AddColumn GroupId (nullable!) on Categories, GameEntries, NowPlaying, PlannedSessions
+AddColumn HostMemberId (nullable) on PlannedSessions
+```
+
+**Phase 3 — Migrate data**
+
+Insert this after new columns exist but before constraints are enforced:
 
 ```csharp
-// After Groups table is created, before GroupId FKs are enforced:
-
-// 1. Create the default group (Horror Nights — all existing data belongs here)
+// 1. Create default group — all existing data belongs to Horror Nights
 migrationBuilder.Sql(@"
     INSERT INTO ""Groups"" (""Name"", ""Description"", ""ThemeColor"", ""ThemePreset"", ""IconName"", ""CreatedAt"")
     VALUES ('Horror Nights', 'Survival horror roadmap — Resident Evil & Silent Hill',
             '#c0392b', 'horror-dark', 'Theaters', NOW());
 ");
 
-// 2. Create AppUsers for known users
+// 2. Create AppUsers for existing known users
 migrationBuilder.Sql(@"
     INSERT INTO ""AppUsers"" (""PlexUserId"", ""DisplayName"", ""CreatedAt"")
     VALUES ('brecht', 'Brecht', NOW()),
            ('pieter', 'Pieter', NOW());
 ");
 
-// 3. Create GroupMembers (linking users to the Horror Nights group)
+// 3. Create GroupMembers linking users to Horror Nights
 migrationBuilder.Sql(@"
     INSERT INTO ""GroupMembers"" (""GroupId"", ""AppUserId"", ""Nickname"")
     VALUES (
@@ -66,7 +94,7 @@ migrationBuilder.Sql(@"
     );
 ");
 
-// 4. Set GroupId on existing data (all belongs to Horror Nights)
+// 4. Populate GroupId on all existing rows
 migrationBuilder.Sql(@"
     UPDATE ""Categories"" SET ""GroupId"" = (SELECT ""Id"" FROM ""Groups"" WHERE ""Name"" = 'Horror Nights');
     UPDATE ""GameEntries"" SET ""GroupId"" = (SELECT ""Id"" FROM ""Groups"" WHERE ""Name"" = 'Horror Nights');
@@ -75,7 +103,7 @@ migrationBuilder.Sql(@"
 ");
 
 // 5. Migrate PlatformBrechtId/PlatformPieterId → MemberGamePlatforms
-//    (before dropping those columns!)
+//    MUST happen BEFORE dropping those columns
 migrationBuilder.Sql(@"
     INSERT INTO ""MemberGamePlatforms"" (""GroupMemberId"", ""GameEntryId"", ""PlatformId"")
     SELECT
@@ -95,7 +123,7 @@ migrationBuilder.Sql(@"
 ");
 
 // 6. Convert PlannedSessions.Location (string) → HostMemberId (FK)
-//    (before dropping Location column!)
+//    MUST happen BEFORE dropping Location column
 migrationBuilder.Sql(@"
     UPDATE ""PlannedSessions""
     SET ""HostMemberId"" = (SELECT ""Id"" FROM ""GroupMembers"" WHERE ""Nickname"" = LOWER(""Location""))
@@ -103,25 +131,42 @@ migrationBuilder.Sql(@"
 ");
 ```
 
-### Ordering in Up() method:
-1. CreateTable for `AppUsers`, `Groups`, `GroupMembers`, `MemberGamePlatforms`
-2. AddColumn `GroupId` (nullable!) on Categories, GameEntries, NowPlaying, PlannedSessions
-3. AddColumn `HostMemberId` (nullable) on PlannedSessions
-4. **INSERT data migration SQL (steps 1-6 above)**
-5. **ALTER columns to NOT NULL** where needed (GroupId on Categories, GameEntries)
-6. DropColumn `PlatformBrechtId`, `PlatformPieterId` from GameEntries
-7. DropColumn `Location` from PlannedSessions
-8. CreateIndex / AddForeignKey
+**Phase 4 — Enforce constraints**
 
-## Step 3: Test locally first
+Now that data is populated, tighten the schema:
+```
+AlterColumn GroupId on Categories, GameEntries → NOT NULL
+AlterColumn GroupId on NowPlaying, PlannedSessions → NOT NULL
+DropColumn PlatformBrechtId from GameEntries
+DropColumn PlatformPieterId from GameEntries
+DropColumn Location from PlannedSessions
+CreateIndex / AddForeignKey (as generated)
+```
 
-Before touching production:
-1. Take a PostgreSQL dump: `pg_dump -Fc cheapnights > cheapnights_backup.dump`
-2. Create a test database from the dump: `pg_restore -d cheapnights_test cheapnights_backup.dump`
-3. Run migration against test: `ASPNETCORE_ENVIRONMENT=Production dotnet ef database update`
-4. Verify data is intact
+### 4. Test against a cloned database
+
+```bash
+pg_restore -C -d postgres cheapnights_pre_groups_backup.dump   # creates cheapnights_test
+# point connection string at cheapnights_test temporarily
+ASPNETCORE_ENVIRONMENT=Production dotnet ef database update
+# verify: SELECT * FROM "Groups"; SELECT * FROM "GameEntries" WHERE "GroupId" IS NULL;
+```
+
+### 5. Apply to production
+
+```bash
+ASPNETCORE_ENVIRONMENT=Production dotnet ef database update
+```
+
+### 6. Clean up
+
+- Delete `../CheapNights_Migrations_backup/` once confirmed working
+- Delete this file (`MIGRATION_NOTES.md`)
+- Dev SQLite: delete `horror.db` and let `EnsureCreated` rebuild with new schema
+
+---
 
 ## Rollback plan
-- Backup at `../CheapNights_Migrations_backup/`
-- PostgreSQL dump before migration
-- `pg_restore` to revert if anything goes wrong
+
+- `pg_restore -c -d cheapnights cheapnights_pre_groups_backup.dump`
+- Revert migration files from backup
