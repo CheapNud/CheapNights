@@ -45,7 +45,7 @@ public class NowPlayingRepo(IDbContextFactory<CheapNightsDbContext> factory) : B
 
         if (np.GameEntryId is not null && np.GameEntryId != gameEntryId)
         {
-            var previousGame = await db.GameEntries.FindAsync(np.GameEntryId);
+            var previousGame = await db.GameEntries.SingleOrDefaultAsync(e => e.Id == np.GameEntryId);
             if (previousGame is not null && !previousGame.IsCompleted)
             {
                 previousGame.IsCompleted = true;

@@ -57,7 +57,7 @@ public class GameEntryRepo(IDbContextFactory<CheapNightsDbContext> factory) : Ba
     public async Task SaveEntryAsync(GameEntry updated)
     {
         using var db = _factory.CreateDbContext();
-        var entry = await db.GameEntries.FindAsync(updated.Id);
+        var entry = await db.GameEntries.SingleOrDefaultAsync(e => e.Id == updated.Id);
         if (entry is null) return;
 
         entry.Name = updated.Name;
@@ -115,7 +115,7 @@ public class GameEntryRepo(IDbContextFactory<CheapNightsDbContext> factory) : Ba
     public async Task MarkCompletedAsync(int id, string? completedTime)
     {
         using var db = _factory.CreateDbContext();
-        var entry = await db.GameEntries.FindAsync(id);
+        var entry = await db.GameEntries.SingleOrDefaultAsync(e => e.Id == id);
         if (entry is null) return;
 
         entry.IsCompleted = true;
@@ -127,7 +127,7 @@ public class GameEntryRepo(IDbContextFactory<CheapNightsDbContext> factory) : Ba
     public async Task UnmarkCompletedAsync(int id)
     {
         using var db = _factory.CreateDbContext();
-        var entry = await db.GameEntries.FindAsync(id);
+        var entry = await db.GameEntries.SingleOrDefaultAsync(e => e.Id == id);
         if (entry is null) return;
 
         entry.IsCompleted = false;

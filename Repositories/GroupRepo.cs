@@ -74,7 +74,7 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
     public async Task RemoveMemberAsync(int groupMemberId)
     {
         using var db = _factory.CreateDbContext();
-        var member = await db.GroupMembers.FindAsync(groupMemberId);
+        var member = await db.GroupMembers.SingleOrDefaultAsync(m => m.Id == groupMemberId);
         if (member is null) return;
 
         await db.PlannedSessions

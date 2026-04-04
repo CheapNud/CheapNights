@@ -119,7 +119,7 @@ public class SessionRepo(IDbContextFactory<CheapNightsDbContext> factory) : Base
     public async Task DeleteSessionAsync(int id)
     {
         using var db = _factory.CreateDbContext();
-        var session = await db.PlannedSessions.FindAsync(id);
+        var session = await db.PlannedSessions.SingleOrDefaultAsync(s => s.Id == id);
         if (session is null) return;
 
         db.PlannedSessions.Remove(session);
