@@ -47,6 +47,10 @@
   - Store AppUser.Id in claims for downstream group lookups
   - Currently seeded with placeholder PlexUserIds ("brecht", "pieter", "miel") — replace with real Plex IDs
 
+- [ ] (2026-03-31) Add all live-action Resident Evil films to GameEntry seed data in current sort order [user]
+  - Paul W.S. Anderson series (2002-2016): RE, Apocalypse, Extinction, Afterlife, Retribution, The Final Chapter
+  - Welcome to Raccoon City (2021)
+
 - [ ] (2026-03-29) Add CSS vars for Schedule 1 badge color [plan]
   - `--s1-accent` color var in app.css for the S1 category badge
   - Currently only `--re-red` and `--sh-teal` exist
