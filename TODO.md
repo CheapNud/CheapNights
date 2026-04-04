@@ -47,9 +47,10 @@
   - AuthorizeUser hook calls `AppUserRepo.GetOrCreateAsync()` with Plex claims
   - Currently seeded with placeholder PlexUserIds — replace with real Plex IDs on first login
 
-- [ ] (2026-03-31) Add all live-action Resident Evil films to GameEntry seed data in current sort order [user]
+- [x] (2026-03-31 → 2026-04-04) Add all live-action Resident Evil films to GameEntry seed data in current sort order [user]
   - Paul W.S. Anderson series (2002-2016): RE, Apocalypse, Extinction, Afterlife, Retribution, The Final Chapter
   - Welcome to Raccoon City (2021)
+  - Also added: RE HD Remaster (2015), RE0 HD Remaster, RE4 Original (2005)
 
 - [x] (2026-03-29 → 2026-04-04) Add CSS vars for Schedule 1 badge color [plan]
   - `--s1-green`, `--s1-green-dim`, `--s1-green-glow` + section badge/title/divider/stripe classes
