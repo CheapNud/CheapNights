@@ -53,28 +53,24 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
             .ToListAsync();
     }
 
-    public async Task SaveGroupAsync(Group group, int? creatorUserId = null)
+    public async Task CreateGroupAsync(Group group)
     {
         using var db = _factory.CreateDbContext();
 
-        if (group.Id == 0)
+        db.Groups.Add(group);
+        db.GroupMembers.Add(new GroupMember
         {
-            db.Groups.Add(group);
+            Group = group,
+            AppUserId = group.OwnerId
+        });
 
-            if (creatorUserId.HasValue)
-            {
-                db.GroupMembers.Add(new GroupMember
-                {
-                    Group = group,
-                    AppUserId = creatorUserId.Value
-                });
-            }
-        }
-        else
-        {
-            db.Groups.Update(group);
-        }
+        await db.SaveChangesAsync();
+    }
 
+    public async Task UpdateGroupAsync(Group group)
+    {
+        using var db = _factory.CreateDbContext();
+        db.Groups.Update(group);
         await db.SaveChangesAsync();
     }
 
