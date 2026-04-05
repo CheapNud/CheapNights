@@ -70,7 +70,15 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
     public async Task UpdateGroupAsync(Group group)
     {
         using var db = _factory.CreateDbContext();
-        db.Groups.Update(group);
+        var existing = await db.Groups.SingleOrDefaultAsync(g => g.Id == group.Id);
+        if (existing is null) return;
+
+        existing.Name = group.Name;
+        existing.Description = group.Description;
+        existing.ThemeColor = group.ThemeColor;
+        existing.ThemePreset = group.ThemePreset;
+        existing.IconName = group.IconName;
+
         await db.SaveChangesAsync();
     }
 
