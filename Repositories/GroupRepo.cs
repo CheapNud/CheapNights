@@ -70,8 +70,8 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
     public async Task UpdateGroupAsync(Group group)
     {
         using var db = _factory.CreateDbContext();
-        var existing = await db.Groups.SingleOrDefaultAsync(g => g.Id == group.Id);
-        if (existing is null) return;
+        var existing = await db.Groups.SingleOrDefaultAsync(g => g.Id == group.Id)
+            ?? throw new InvalidOperationException($"Group {group.Id} not found");
 
         existing.Name = group.Name;
         existing.Description = group.Description;
