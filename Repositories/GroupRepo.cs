@@ -53,15 +53,18 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
             .ToListAsync();
     }
 
-    public async Task CreateGroupAsync(Group group)
+    public async Task CreateGroupAsync(Group group, int callerUserId)
     {
+        if (group.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException("Group owner must match the authenticated user");
+
         using var db = _factory.CreateDbContext();
 
         db.Groups.Add(group);
         db.GroupMembers.Add(new GroupMember
         {
             Group = group,
-            AppUserId = group.OwnerId
+            AppUserId = callerUserId
         });
 
         await db.SaveChangesAsync();
@@ -108,6 +111,9 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
 
         if (member.Group!.OwnerId != callerUserId)
             throw new UnauthorizedAccessException($"User {callerUserId} is not the owner of group {member.GroupId}");
+
+        if (member.AppUserId == member.Group.OwnerId)
+            throw new InvalidOperationException("Cannot remove the group owner as a member");
 
         await db.PlannedSessions
             .Where(s => s.HostMemberId == groupMemberId)

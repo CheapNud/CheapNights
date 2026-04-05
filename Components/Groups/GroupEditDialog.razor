@@ -120,7 +120,7 @@
         group.IconName = string.IsNullOrWhiteSpace(_iconName) ? null : _iconName.Trim();
 
         if (ExistingGroup is null)
-            await GroupRepo.CreateGroupAsync(group);
+            await GroupRepo.CreateGroupAsync(group, OwnerUserId);
         else
             await GroupRepo.UpdateGroupAsync(group, OwnerUserId);
 
