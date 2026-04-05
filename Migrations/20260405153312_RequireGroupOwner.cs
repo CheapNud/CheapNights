@@ -10,6 +10,17 @@ namespace CheapNights.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Assign any ownerless groups to their first member before enforcing NOT NULL
+            migrationBuilder.Sql(@"
+                UPDATE ""Groups"" g
+                SET ""OwnerId"" = (
+                    SELECT ""AppUserId"" FROM ""GroupMembers""
+                    WHERE ""GroupId"" = g.""Id""
+                    ORDER BY ""Id"" LIMIT 1
+                )
+                WHERE ""OwnerId"" IS NULL;
+            ");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_Groups_AppUsers_OwnerId",
                 table: "Groups");
