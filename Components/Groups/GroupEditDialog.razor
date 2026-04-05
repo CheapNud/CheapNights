@@ -122,7 +122,7 @@
         if (ExistingGroup is null)
             await GroupRepo.CreateGroupAsync(group);
         else
-            await GroupRepo.UpdateGroupAsync(group);
+            await GroupRepo.UpdateGroupAsync(group, OwnerUserId);
 
         MudDialog.Close(DialogResult.Ok(true));
     }

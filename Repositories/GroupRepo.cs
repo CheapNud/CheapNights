@@ -67,11 +67,14 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
         await db.SaveChangesAsync();
     }
 
-    public async Task UpdateGroupAsync(Group group)
+    public async Task UpdateGroupAsync(Group group, int callerUserId)
     {
         using var db = _factory.CreateDbContext();
         var existing = await db.Groups.SingleOrDefaultAsync(g => g.Id == group.Id)
             ?? throw new InvalidOperationException($"Group {group.Id} not found");
+
+        if (existing.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException($"User {callerUserId} is not the owner of group {group.Id}");
 
         existing.Name = group.Name;
         existing.Description = group.Description;
@@ -82,18 +85,29 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
         await db.SaveChangesAsync();
     }
 
-    public async Task AddMemberAsync(GroupMember member)
+    public async Task AddMemberAsync(GroupMember member, int callerUserId)
     {
         using var db = _factory.CreateDbContext();
+        var group = await db.Groups.SingleOrDefaultAsync(g => g.Id == member.GroupId)
+            ?? throw new InvalidOperationException($"Group {member.GroupId} not found");
+
+        if (group.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException($"User {callerUserId} is not the owner of group {member.GroupId}");
+
         db.GroupMembers.Add(member);
         await db.SaveChangesAsync();
     }
 
-    public async Task RemoveMemberAsync(int groupMemberId)
+    public async Task RemoveMemberAsync(int groupMemberId, int callerUserId)
     {
         using var db = _factory.CreateDbContext();
-        var member = await db.GroupMembers.SingleOrDefaultAsync(m => m.Id == groupMemberId);
+        var member = await db.GroupMembers
+            .Include(m => m.Group)
+            .SingleOrDefaultAsync(m => m.Id == groupMemberId);
         if (member is null) return;
+
+        if (member.Group!.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException($"User {callerUserId} is not the owner of group {member.GroupId}");
 
         await db.PlannedSessions
             .Where(s => s.HostMemberId == groupMemberId)

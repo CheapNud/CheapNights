@@ -184,14 +184,14 @@ else
             GroupId = groupId,
             AppUserId = _selectedUserId.Value
         };
-        await GroupRepo.AddMemberAsync(member);
+        await GroupRepo.AddMemberAsync(member, _currentUserId);
         _selectedUserId = null;
         await LoadGroups();
     }
 
     private async Task RemoveMember(GroupMember member)
     {
-        await GroupRepo.RemoveMemberAsync(member.Id);
+        await GroupRepo.RemoveMemberAsync(member.Id, _currentUserId);
         await LoadGroups();
     }
 
