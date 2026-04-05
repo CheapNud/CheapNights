@@ -56,24 +56,26 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
     public async Task SaveGroupAsync(Group group, int? creatorUserId = null)
     {
         using var db = _factory.CreateDbContext();
-        var isNew = group.Id == 0;
 
-        if (isNew)
+        if (group.Id == 0)
+        {
             db.Groups.Add(group);
+
+            if (creatorUserId.HasValue)
+            {
+                db.GroupMembers.Add(new GroupMember
+                {
+                    Group = group,
+                    AppUserId = creatorUserId.Value
+                });
+            }
+        }
         else
+        {
             db.Groups.Update(group);
+        }
 
         await db.SaveChangesAsync();
-
-        if (isNew && creatorUserId.HasValue)
-        {
-            db.GroupMembers.Add(new GroupMember
-            {
-                GroupId = group.Id,
-                AppUserId = creatorUserId.Value
-            });
-            await db.SaveChangesAsync();
-        }
     }
 
     public async Task AddMemberAsync(GroupMember member)
