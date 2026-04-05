@@ -22,7 +22,7 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd Class="@GetFirstCellClasses(context)" Style="text-align:center">
-                @if (context.IsMovie)
+                @if (context.IsMovie && !context.IsCompleted)
                 {
                     <span class="movie-icon">🎬</span>
                 }
@@ -136,14 +136,14 @@
         };
         if (!string.IsNullOrEmpty(stripeClass)) classes.Add(stripeClass);
 
-        if (!entry.IsMovie) AddRowStateClasses(entry, classes);
+        AddRowStateClasses(entry, classes);
         return string.Join(" ", classes);
     }
 
     private string GetCellClasses(GameEntry entry)
     {
         var classes = new List<string> { entry.IsMovie ? "movie-row" : "game-row" };
-        if (!entry.IsMovie) AddRowStateClasses(entry, classes);
+        AddRowStateClasses(entry, classes);
         return string.Join(" ", classes);
     }
 
