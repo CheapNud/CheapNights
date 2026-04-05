@@ -119,7 +119,7 @@
         group.ThemePreset = _themePreset;
         group.IconName = string.IsNullOrWhiteSpace(_iconName) ? null : _iconName.Trim();
 
-        await GroupRepo.SaveGroupAsync(group);
+        await GroupRepo.SaveGroupAsync(group, ExistingGroup is null ? OwnerUserId : null);
         MudDialog.Close(DialogResult.Ok(true));
     }
 
