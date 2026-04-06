@@ -52,7 +52,8 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
 
         modelBuilder.Entity<Group>(e =>
         {
-            e.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId);
+            e.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<GroupMember>(e =>
