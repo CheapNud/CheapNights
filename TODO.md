@@ -36,8 +36,10 @@
 
 ## Planned
 
-- [ ] (2026-04-04) Better onboarding and user management [user]
-  - Welcome flow for new users, proper member invitation, user profile/settings
+- [ ] (2026-04-07) Calendar integration [user]
+
+- [x] (2026-04-04 → 2026-04-07) Better onboarding and user management [user]
+  - Welcome flow, group nav icon, auto-add creator as member, ownership enforcement
 
 - [x] (2026-03-29 → 2026-04-04) Create production migration for multi-group schema [plan]
   - Incremental migration with 4-phase data preservation (nullable → migrate → constrain → drop)
