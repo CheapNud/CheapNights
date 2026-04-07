@@ -1,0 +1,52 @@
+name: Deploy to Megaton
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy:
+    name: Deploy to Megaton
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Deploy via SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.MEGATON_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.MEGATON_HOST }}
+          DEPLOY_USER: ${{ secrets.MEGATON_USER }}
+          DEPLOY_HOST_KEY: ${{ secrets.MEGATON_HOST_KEY }}
+        run: |
+          set -e
+
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "$DEPLOY_HOST_KEY" >> ~/.ssh/known_hosts
+
+          echo "Deploying CheapNights to $DEPLOY_HOST..."
+
+          ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" /bin/bash -s << 'DEPLOY'
+            set -e
+            cd /opt/blazor-apps/cheapnights
+
+            echo "Pulling latest image..."
+            docker compose pull
+
+            echo "Restarting container..."
+            docker compose up -d --force-recreate
+
+            echo "Cleaning up old images..."
+            docker image prune -f
+
+            echo "Verifying..."
+            sleep 5
+            docker compose ps
+
+            echo "Deploy complete"
+          DEPLOY
+
+          rm -f ~/.ssh/deploy_key
+          echo "Deployment successful"
