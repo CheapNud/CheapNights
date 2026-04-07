@@ -8,6 +8,13 @@
 
 <PageTitle>Groups — CheapNights</PageTitle>
 
+<div class="mb-4">
+    <MudButton Href="/" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack"
+               Size="Size.Small" Style="color:#555; text-transform:none;">
+        Back
+    </MudButton>
+</div>
+
 <div class="horror-header mb-12">
     <div class="horror-title mb-5">GROUPS</div>
     <MudText Typo="Typo.caption" Class="header-sub">Manage your gaming groups</MudText>
@@ -177,14 +184,14 @@ else
             GroupId = groupId,
             AppUserId = _selectedUserId.Value
         };
-        await GroupRepo.AddMemberAsync(member);
+        await GroupRepo.AddMemberAsync(member, _currentUserId);
         _selectedUserId = null;
         await LoadGroups();
     }
 
     private async Task RemoveMember(GroupMember member)
     {
-        await GroupRepo.RemoveMemberAsync(member.Id);
+        await GroupRepo.RemoveMemberAsync(member.Id, _currentUserId);
         await LoadGroups();
     }
 

@@ -14,8 +14,14 @@
         <div class="horror-title mb-5">CHEAPNIGHTS</div>
         <MudText Typo="Typo.caption" Class="header-sub mb-8" Style="text-align:center;">Welcome — you're not in any groups yet</MudText>
         <MudText Typo="Typo.body2" Style="text-align:center; color:var(--text-dim);">
-            Ask an existing group member to add you.
+            Ask an existing group member to add you, or create your own.
         </MudText>
+        <div class="d-flex justify-center mt-6">
+            <MudButton Href="/groups" Variant="Variant.Outlined" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add">
+                Create a Group
+            </MudButton>
+        </div>
     </div>
 }
 else if (ActiveGroupService.ActiveGroup is null)

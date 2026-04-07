@@ -53,29 +53,67 @@ public class GroupRepo(IDbContextFactory<CheapNightsDbContext> factory) : BaseRe
             .ToListAsync();
     }
 
-    public async Task SaveGroupAsync(Group group)
+    public async Task CreateGroupAsync(Group group, int callerUserId)
     {
+        if (group.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException("Group owner must match the authenticated user");
+
         using var db = _factory.CreateDbContext();
-        if (group.Id == 0)
-            db.Groups.Add(group);
-        else
-            db.Groups.Update(group);
+
+        db.Groups.Add(group);
+        db.GroupMembers.Add(new GroupMember
+        {
+            Group = group,
+            AppUserId = callerUserId
+        });
 
         await db.SaveChangesAsync();
     }
 
-    public async Task AddMemberAsync(GroupMember member)
+    public async Task UpdateGroupAsync(Group group, int callerUserId)
     {
         using var db = _factory.CreateDbContext();
+        var existing = await db.Groups.SingleOrDefaultAsync(g => g.Id == group.Id)
+            ?? throw new InvalidOperationException($"Group {group.Id} not found");
+
+        if (existing.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException($"User {callerUserId} is not the owner of group {group.Id}");
+
+        existing.Name = group.Name;
+        existing.Description = group.Description;
+        existing.ThemeColor = group.ThemeColor;
+        existing.ThemePreset = group.ThemePreset;
+        existing.IconName = group.IconName;
+
+        await db.SaveChangesAsync();
+    }
+
+    public async Task AddMemberAsync(GroupMember member, int callerUserId)
+    {
+        using var db = _factory.CreateDbContext();
+        var group = await db.Groups.SingleOrDefaultAsync(g => g.Id == member.GroupId)
+            ?? throw new InvalidOperationException($"Group {member.GroupId} not found");
+
+        if (group.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException($"User {callerUserId} is not the owner of group {member.GroupId}");
+
         db.GroupMembers.Add(member);
         await db.SaveChangesAsync();
     }
 
-    public async Task RemoveMemberAsync(int groupMemberId)
+    public async Task RemoveMemberAsync(int groupMemberId, int callerUserId)
     {
         using var db = _factory.CreateDbContext();
-        var member = await db.GroupMembers.SingleOrDefaultAsync(m => m.Id == groupMemberId);
+        var member = await db.GroupMembers
+            .Include(m => m.Group)
+            .SingleOrDefaultAsync(m => m.Id == groupMemberId);
         if (member is null) return;
+
+        if (member.Group!.OwnerId != callerUserId)
+            throw new UnauthorizedAccessException($"User {callerUserId} is not the owner of group {member.GroupId}");
+
+        if (member.AppUserId == member.Group.OwnerId)
+            throw new InvalidOperationException("Cannot remove the group owner as a member");
 
         await db.PlannedSessions
             .Where(s => s.HostMemberId == groupMemberId)
