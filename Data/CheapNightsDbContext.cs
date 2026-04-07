@@ -72,34 +72,17 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
         });
 
         // ═══════════════════════════════════════
-        //              APP USERS
+        //    APP USERS / GROUP MEMBERS
         // ═══════════════════════════════════════
-
-        modelBuilder.Entity<AppUser>().HasData(
-            new AppUser { Id = 1, PlexUserId = "brecht", DisplayName = "Brecht", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
-            new AppUser { Id = 2, PlexUserId = "pieter", DisplayName = "Pieter", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) }
-        );
+        // No seed data — provisioned at runtime via Plex auth + group management UI
 
         // ═══════════════════════════════════════
         //              GROUPS
         // ═══════════════════════════════════════
 
         modelBuilder.Entity<Group>().HasData(
-            new Group { Id = 1, Name = "Horror Nights", Description = "Survival horror roadmap — Resident Evil & Silent Hill", ThemeColor = "#c0392b", ThemePreset = "horror-dark", IconName = "Theaters", OwnerId = 1, CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
-            new Group { Id = 2, Name = "Schedule 1", Description = "Schedule 1 gaming sessions", ThemeColor = "#4caf50", ThemePreset = "forest", IconName = "SportsEsports", OwnerId = 1, CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
-        );
-
-        // ═══════════════════════════════════════
-        //              GROUP MEMBERS
-        // ═══════════════════════════════════════
-        // GroupMember 1: Brecht in Horror Nights
-        // GroupMember 2: Pieter in Horror Nights
-        // GroupMember 3: Brecht in Schedule 1
-
-        modelBuilder.Entity<GroupMember>().HasData(
-            new GroupMember { Id = 1, GroupId = 1, AppUserId = 1, Nickname = "brecht" },
-            new GroupMember { Id = 2, GroupId = 1, AppUserId = 2, Nickname = "pieter" },
-            new GroupMember { Id = 3, GroupId = 2, AppUserId = 1, Nickname = "brecht" }
+            new Group { Id = 1, Name = "Horror Nights", Description = "Survival horror roadmap — Resident Evil & Silent Hill", ThemeColor = "#c0392b", ThemePreset = "horror-dark", IconName = "Theaters", CreatedAt = new DateTime(2026, 3, 14, 0, 0, 0, DateTimeKind.Utc) },
+            new Group { Id = 2, Name = "Schedule 1", Description = "Schedule 1 gaming sessions", ThemeColor = "#4caf50", ThemePreset = "forest", IconName = "SportsEsports", CreatedAt = new DateTime(2026, 3, 29, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         // ═══════════════════════════════════════
