@@ -2,6 +2,7 @@ using CheapHelpers.Blazor.Extensions;
 using CheapHelpers.Services.Auth.Plex;
 using CheapHelpers.Services.Auth.Plex.Extensions;
 using CheapNights.Components;
+using CheapNights.Helpers;
 using CheapNights.Data;
 using CheapNights.Repositories;
 using CheapNights.Services;
@@ -107,6 +108,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapPlexAuthEndpoints();
+app.MapCalendarEndpoints();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
