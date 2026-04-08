@@ -257,16 +257,11 @@ else
 
     private async Task LoadCalendarUrl()
     {
-        if (AuthState is null) return;
-        var state = await AuthState;
-        var plexId = state.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (plexId is null) return;
-
-        var appUser = await AppUserRepo.GetByPlexIdAsync(plexId);
-        if (appUser?.CalendarToken is not null)
+        var token = await AppUserRepo.GetCalendarTokenAsync(_currentUserId);
+        if (token is not null)
         {
             var baseUrl = Navigation.BaseUri.TrimEnd('/');
-            _calendarUrl = $"{baseUrl}/api/calendar/{appUser.CalendarToken}.ics";
+            _calendarUrl = $"{baseUrl}/api/calendar/{token}.ics";
         }
     }
 

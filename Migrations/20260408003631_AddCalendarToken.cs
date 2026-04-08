@@ -16,11 +16,22 @@ namespace CheapNights.Migrations
                 table: "AppUsers",
                 type: "uuid",
                 nullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppUsers_CalendarToken",
+                table: "AppUsers",
+                column: "CalendarToken",
+                unique: true,
+                filter: "\"CalendarToken\" IS NOT NULL");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_AppUsers_CalendarToken",
+                table: "AppUsers");
+
             migrationBuilder.DropColumn(
                 name: "CalendarToken",
                 table: "AppUsers");

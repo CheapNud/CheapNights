@@ -37,6 +37,15 @@ public class AppUserRepo(IDbContextFactory<CheapNightsDbContext> factory) : Base
             .FirstOrDefaultAsync(u => u.CalendarToken == token);
     }
 
+    public async Task<Guid?> GetCalendarTokenAsync(int appUserId)
+    {
+        using var db = _factory.CreateDbContext();
+        return await db.AppUsers
+            .Where(u => u.Id == appUserId)
+            .Select(u => u.CalendarToken)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<Guid> GetOrCreateCalendarTokenAsync(int appUserId)
     {
         using var db = _factory.CreateDbContext();
