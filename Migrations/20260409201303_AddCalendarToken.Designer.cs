@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CheapNights.Migrations
 {
     [DbContext(typeof(CheapNightsDbContext))]
-    [Migration("20260408003631_AddCalendarToken")]
+    [Migration("20260409201303_AddCalendarToken")]
     partial class AddCalendarToken
     {
         /// <inheritdoc />
@@ -51,6 +51,10 @@ namespace CheapNights.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CalendarToken")
+                        .IsUnique()
+                        .HasFilter("\"CalendarToken\" IS NOT NULL");
 
                     b.ToTable("AppUsers");
                 });

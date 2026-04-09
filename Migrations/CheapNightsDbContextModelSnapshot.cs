@@ -49,6 +49,10 @@ namespace CheapNights.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CalendarToken")
+                        .IsUnique()
+                        .HasFilter("\"CalendarToken\" IS NOT NULL");
+
                     b.ToTable("AppUsers");
                 });
 

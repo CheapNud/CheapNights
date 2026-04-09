@@ -85,7 +85,7 @@ public static class CalendarEndpoints
             var chunkLen = Math.Min(maxChunk, bytes.Length - offset);
 
             // don't split in the middle of a multi-byte UTF-8 sequence
-            while (chunkLen > 0 && (bytes[offset + chunkLen - 1] & 0xC0) == 0x80)
+            while (chunkLen > 1 && (bytes[offset + chunkLen - 1] & 0xC0) == 0x80)
                 chunkLen--;
 
             if (!first)
