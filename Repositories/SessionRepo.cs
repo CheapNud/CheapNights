@@ -105,6 +105,25 @@ public class SessionRepo(IDbContextFactory<CheapNightsDbContext> factory) : Base
             .ToListAsync();
     }
 
+    public async Task<List<PlannedSession>> GetAllForUserAsync(int appUserId)
+    {
+        using var db = _factory.CreateDbContext();
+        var groupIds = await db.GroupMembers
+            .Where(m => m.AppUserId == appUserId)
+            .Select(m => m.GroupId)
+            .ToListAsync();
+
+        return await db.PlannedSessions
+            .Include(s => s.GameEntry)
+            .Include(s => s.Group)
+            .Include(s => s.HostMember)
+                .ThenInclude(m => m!.AppUser)
+            .Where(s => groupIds.Contains(s.GroupId) && !s.IsCompleted)
+            .OrderBy(s => s.ScheduledAt)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public async Task SaveSessionAsync(PlannedSession session)
     {
         using var db = _factory.CreateDbContext();

@@ -29,6 +29,37 @@ public class AppUserRepo(IDbContextFactory<CheapNightsDbContext> factory) : Base
             .ToListAsync();
     }
 
+    public async Task<AppUser?> GetByCalendarTokenAsync(Guid token)
+    {
+        using var db = _factory.CreateDbContext();
+        return await db.AppUsers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.CalendarToken == token);
+    }
+
+    public async Task<Guid?> GetCalendarTokenAsync(int appUserId)
+    {
+        using var db = _factory.CreateDbContext();
+        return await db.AppUsers
+            .Where(u => u.Id == appUserId)
+            .Select(u => u.CalendarToken)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<Guid> GetOrCreateCalendarTokenAsync(int appUserId)
+    {
+        using var db = _factory.CreateDbContext();
+        var appUser = await db.AppUsers.SingleOrDefaultAsync(u => u.Id == appUserId)
+            ?? throw new InvalidOperationException($"AppUser {appUserId} not found");
+
+        if (appUser.CalendarToken.HasValue)
+            return appUser.CalendarToken.Value;
+
+        appUser.CalendarToken = Guid.NewGuid();
+        await db.SaveChangesAsync();
+        return appUser.CalendarToken.Value;
+    }
+
     public async Task<AppUser> GetOrCreateAsync(string plexUserId, string displayName, string? avatarUrl)
     {
         using var db = _factory.CreateDbContext();

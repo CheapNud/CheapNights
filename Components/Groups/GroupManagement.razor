@@ -5,6 +5,8 @@
 @inject ActiveGroupService ActiveGroupService
 @inject IDialogService DialogService
 @inject IDbContextFactory<CheapNights.Data.CheapNightsDbContext> DbFactory
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <PageTitle>Groups — CheapNights</PageTitle>
 
@@ -131,6 +133,36 @@ else
             </MudCardContent>
         </MudCard>
     }
+
+    <MudCard Class="mb-6" Elevation="0" Style="background:#0f0f0f; border:1px solid #222;">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Calendar Feed</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Subscribe in any calendar app (Google, Outlook, Apple)</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (_calendarUrl is not null)
+            {
+                <div class="d-flex align-center gap-2">
+                    <MudTextField T="string" Value="_calendarUrl" ReadOnly="true" Variant="Variant.Outlined"
+                                  Dense="true" Style="font-size:12px;" />
+                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
+                                   Color="Color.Primary" OnClick="CopyCalendarUrl" />
+                </div>
+                <MudText Typo="Typo.caption" Class="mt-2" Style="color:var(--text-dim);">
+                    Includes all sessions from your groups. Do not share — this URL is personal.
+                </MudText>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                           OnClick="GenerateCalendarUrl" StartIcon="@Icons.Material.Filled.CalendarMonth">
+                    Calendar URL
+                </MudButton>
+            }
+        </MudCardContent>
+    </MudCard>
 }
 
 @code {
@@ -140,6 +172,7 @@ else
     private bool _loaded;
     private int _currentUserId;
     private int? _selectedUserId;
+    private string? _calendarUrl;
     private List<Group> _groups = [];
     private Dictionary<int, List<GroupMember>> _groupMembers = [];
     private Dictionary<int, List<Category>> _groupCategories = [];
@@ -157,6 +190,7 @@ else
         _currentUserId = appUser.Id;
 
         await LoadGroups();
+        await LoadCalendarUrl();
         _loaded = true;
     }
 
@@ -219,5 +253,28 @@ else
 
         if (dialogResult is not null && !dialogResult.Canceled)
             await LoadGroups();
+    }
+
+    private async Task LoadCalendarUrl()
+    {
+        var token = await AppUserRepo.GetCalendarTokenAsync(_currentUserId);
+        if (token is not null)
+        {
+            var baseUrl = Navigation.BaseUri.TrimEnd('/');
+            _calendarUrl = $"{baseUrl}/api/calendar/{token}.ics";
+        }
+    }
+
+    private async Task GenerateCalendarUrl()
+    {
+        var token = await AppUserRepo.GetOrCreateCalendarTokenAsync(_currentUserId);
+        var baseUrl = Navigation.BaseUri.TrimEnd('/');
+        _calendarUrl = $"{baseUrl}/api/calendar/{token}.ics";
+    }
+
+    private async Task CopyCalendarUrl()
+    {
+        if (_calendarUrl is not null)
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", _calendarUrl);
     }
 }

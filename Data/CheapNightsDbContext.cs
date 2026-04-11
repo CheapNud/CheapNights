@@ -50,6 +50,11 @@ public class CheapNightsDbContext(DbContextOptions<CheapNightsDbContext> options
             e.HasIndex(n => n.GroupId).IsUnique();
         });
 
+        modelBuilder.Entity<AppUser>(e =>
+        {
+            e.HasIndex(u => u.CalendarToken).IsUnique().HasFilter("\"CalendarToken\" IS NOT NULL");
+        });
+
         modelBuilder.Entity<Group>(e =>
         {
             e.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId)
