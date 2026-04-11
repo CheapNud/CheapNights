@@ -1,6 +1,9 @@
+using System.Globalization;
+using System.Security.Claims;
 using System.Text;
 using CheapNights.Models;
 using CheapNights.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CheapNights.Helpers;
 
@@ -26,6 +29,58 @@ public static class CalendarEndpoints
         })
         .AllowAnonymous()
         .RequireRateLimiting("calendar");
+
+        app.MapGet("/api/calendar/export.csv", [Authorize] async (HttpContext context, AppUserRepo appUserRepo, SessionRepo sessionRepo) =>
+        {
+            var plexId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (plexId is null)
+                return Results.Unauthorized();
+
+            var appUser = await appUserRepo.GetByPlexIdAsync(plexId);
+            if (appUser is null)
+                return Results.Unauthorized();
+
+            var sessions = await sessionRepo.GetAllForUserAsync(appUser.Id);
+            var csv = BuildCsv(sessions);
+            var fileName = $"cheapnights-sessions-{DateTime.UtcNow:yyyy-MM-dd}.csv";
+
+            return Results.File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+        });
+    }
+
+    private static string BuildCsv(List<PlannedSession> sessions)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("Date,Time,Game,Host,Group,Notes");
+
+        foreach (var session in sessions)
+        {
+            var local = session.ScheduledAt.ToLocalTime();
+            var date = local.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var time = local.ToString("HH:mm", CultureInfo.InvariantCulture);
+            var game = ResolveGameName(session);
+            var host = session.HostMember?.AppUser?.DisplayName
+                    ?? session.HostMember?.Nickname
+                    ?? "";
+            var group = session.Group?.Name ?? "";
+            var notes = session.Notes ?? "";
+
+            sb.Append(EscapeCsv(date)).Append(',');
+            sb.Append(EscapeCsv(time)).Append(',');
+            sb.Append(EscapeCsv(game)).Append(',');
+            sb.Append(EscapeCsv(host)).Append(',');
+            sb.Append(EscapeCsv(group)).Append(',');
+            sb.AppendLine(EscapeCsv(notes));
+        }
+
+        return sb.ToString();
+    }
+
+    private static string EscapeCsv(string value)
+    {
+        if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
+            return $"\"{value.Replace("\"", "\"\"")}\"";
+        return value;
     }
 
     private static string BuildICalendar(List<PlannedSession> sessions, string userName)
