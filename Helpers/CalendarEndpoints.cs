@@ -10,7 +10,7 @@ public static class CalendarEndpoints
 
     public static void MapCalendarEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/calendar/{token}.ics", async (Guid token, AppUserRepo appUserRepo, SessionRepo sessionRepo) =>
+        app.MapGet("/api/calendar/{token}.ics", async (Guid token, HttpContext context, AppUserRepo appUserRepo, SessionRepo sessionRepo) =>
         {
             var appUser = await appUserRepo.GetByCalendarTokenAsync(token);
             if (appUser is null)
@@ -19,8 +19,13 @@ public static class CalendarEndpoints
             var sessions = await sessionRepo.GetAllForUserAsync(appUser.Id);
             var ical = BuildICalendar(sessions, appUser.DisplayName);
 
+            context.Response.Headers.CacheControl = "private, no-store";
+            context.Response.Headers.Pragma = "no-cache";
+
             return Results.Text(ical, "text/calendar; charset=utf-8");
-        }).AllowAnonymous();
+        })
+        .AllowAnonymous()
+        .RequireRateLimiting("calendar");
     }
 
     private static string BuildICalendar(List<PlannedSession> sessions, string userName)
