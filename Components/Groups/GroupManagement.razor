@@ -138,7 +138,7 @@ else
         <MudCardHeader>
             <CardHeaderContent>
                 <MudText Typo="Typo.h6">Calendar Feed</MudText>
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Subscribe in any calendar app (Google, Outlook, Apple)</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Subscribe in any calendar app (Google, Outlook, Apple) or export to CSV</MudText>
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent>
@@ -161,6 +161,12 @@ else
                     Calendar URL
                 </MudButton>
             }
+            <div class="mt-3">
+                <MudButton Href="/api/calendar/export.csv" Variant="Variant.Outlined" Color="Color.Default"
+                           Size="Size.Small" StartIcon="@Icons.Material.Filled.Download">
+                    Export CSV
+                </MudButton>
+            </div>
         </MudCardContent>
     </MudCard>
 }
