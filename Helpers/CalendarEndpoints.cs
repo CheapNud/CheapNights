@@ -78,6 +78,9 @@ public static class CalendarEndpoints
 
     private static string EscapeCsv(string value)
     {
+        // prefix with ' so spreadsheet apps don't execute user-supplied values as formulas
+        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@' or '\t')
+            value = "'" + value;
         if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
             return $"\"{value.Replace("\"", "\"\"")}\"";
         return value;
