@@ -13,7 +13,7 @@ permissions:
 
 env:
   CLAUDE_MODEL: "claude-opus-4-8"
-  MAX_TOKENS: 4096
+  MAX_TOKENS: 8192
   MAX_DIFF_SIZE_BYTES: 300000
 
 jobs:
