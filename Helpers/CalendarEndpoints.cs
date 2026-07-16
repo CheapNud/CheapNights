@@ -55,9 +55,9 @@ public static class CalendarEndpoints
 
         foreach (var session in sessions)
         {
-            var local = session.ScheduledAt.ToLocalTime();
-            var date = local.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            var time = local.ToString("HH:mm", CultureInfo.InvariantCulture);
+            // ScheduledAt holds the wall-clock time the user picked; print it as-is
+            var date = session.ScheduledAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var time = session.ScheduledAt.ToString("HH:mm", CultureInfo.InvariantCulture);
             var game = ResolveGameName(session);
             var host = session.HostMember?.AppUser?.DisplayName
                     ?? session.HostMember?.Nickname
@@ -113,8 +113,8 @@ public static class CalendarEndpoints
 
             AppendLine(sb, "BEGIN:VEVENT");
             AppendLine(sb, $"UID:cheapnights-session-{session.Id}@cheapnights");
-            AppendLine(sb, $"DTSTART:{FormatDateTime(session.ScheduledAt)}");
-            AppendLine(sb, $"DTEND:{FormatDateTime(session.ScheduledAt.AddHours(3))}");
+            AppendLine(sb, $"DTSTART:{FormatFloating(session.ScheduledAt)}");
+            AppendLine(sb, $"DTEND:{FormatFloating(session.ScheduledAt.AddHours(3))}");
             AppendFolded(sb, $"SUMMARY:{EscapeIcal(summary)}");
             AppendFolded(sb, $"DESCRIPTION:{EscapeIcal(string.Join(" — ", descriptionParts))}");
             if (hostName is not null)
@@ -171,6 +171,11 @@ public static class CalendarEndpoints
 
     private static string FormatDateTime(DateTime dt) =>
         dt.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'");
+
+    // ScheduledAt is the wall-clock time the user picked (stamped Utc for PostgreSQL),
+    // so emit it as a floating time and let each calendar app show it unshifted
+    private static string FormatFloating(DateTime dt) =>
+        dt.ToString("yyyyMMdd'T'HHmmss");
 
     private static string EscapeIcal(string text) =>
         text.Replace("\\", "\\\\").Replace(",", "\\,").Replace(";", "\\;")

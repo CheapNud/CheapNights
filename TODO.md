@@ -1,6 +1,6 @@
 <!--
   TODO.md — CheapNights project work tracker
-  Last updated: 2026-07-10
+  Last updated: 2026-07-16
 
   RULES FOR AI AGENTS:
   - Update the "Last updated" date above whenever you modify this file
@@ -36,7 +36,7 @@
 
 ## Planned
 
-- [ ] (2026-07-10) Fix timezone handling in calendar exports [audit]
+- [x] (2026-07-10 → 2026-07-16) Fix timezone handling in calendar exports [audit]
   - Session times are saved as the wall-clock time the user picked but labeled UTC, so calendar apps shift iCal feed events 1-2 hours late
   - Implementation notes: use floating times (no Z suffix) in BuildICalendar, drop ToLocalTime in the CSV export so both print the stored time as-is
 
