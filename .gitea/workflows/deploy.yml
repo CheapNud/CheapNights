@@ -1,0 +1,75 @@
+name: Deploy to Megaton
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy:
+    name: Deploy to Megaton
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        shell: bash
+        env:
+          DEPLOY_KEY: ${{ secrets.MEGATON_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.MEGATON_HOST }}
+          DEPLOY_USER: ${{ secrets.MEGATON_USER }}
+          DEPLOY_HOST_KEY: ${{ secrets.MEGATON_HOST_KEY }}
+          DEPLOY_TAG: ${{ github.ref_name }}
+        run: |
+          set -e
+
+          # Secrets pasted through the web UI can carry a trailing newline;
+          # OpenSSH rejects hostnames with control characters, so strip them.
+          DEPLOY_HOST="$(printf '%s' "$DEPLOY_HOST" | tr -d '[:space:]')"
+          DEPLOY_USER="$(printf '%s' "$DEPLOY_USER" | tr -d '[:space:]')"
+
+          # Reject anything that isn't strict semver — DEPLOY_TAG is interpolated into
+          # the remote ssh command below, so it's a trust boundary.
+          if [[ ! "$DEPLOY_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Refusing to deploy: tag '$DEPLOY_TAG' does not match ^v[0-9]+\.[0-9]+\.[0-9]+$"
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          trap 'rm -f ~/.ssh/deploy_key' EXIT
+          echo "$DEPLOY_HOST_KEY" >> ~/.ssh/known_hosts
+
+          # Strip leading 'v' so it matches the docker tag (publish.yml uses {{version}} pattern)
+          DOCKER_TAG="${DEPLOY_TAG#v}"
+          echo "Deploying $DEPLOY_TAG (docker tag: $DOCKER_TAG) to $DEPLOY_HOST"
+
+          # Sync compose for this tag (so any compose changes ship with the release)
+          scp -i ~/.ssh/deploy_key docker-compose.yml \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/blazor-apps/cheapnights/docker-compose.yml"
+
+          ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "export CHEAPNIGHTS_TAG='${DOCKER_TAG}'; /bin/bash -s" << 'DEPLOY'
+            set -e
+
+            cd /opt/blazor-apps/cheapnights
+
+            echo "Pulling image for ${CHEAPNIGHTS_TAG}..."
+            CHEAPNIGHTS_TAG="${CHEAPNIGHTS_TAG}" docker compose pull
+
+            echo "Recreating container..."
+            CHEAPNIGHTS_TAG="${CHEAPNIGHTS_TAG}" docker compose up -d --force-recreate
+
+            docker image prune -f
+
+            echo "Verifying..."
+            sleep 8
+            docker compose ps
+            docker inspect horror-roadmap --format 'running-version: {{index .Config.Labels "org.opencontainers.image.version"}}'
+          DEPLOY
+
+          echo "Deployment of $DEPLOY_TAG complete"
