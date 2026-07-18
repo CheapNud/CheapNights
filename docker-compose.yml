@@ -1,8 +1,10 @@
 services:
   horror-roadmap:
-    image: ghcr.io/cheapnud/cheapnights:latest
+    image: ghcr.io/cheapnud/cheapnights:${CHEAPNIGHTS_TAG:-latest}
     container_name: horror-roadmap
     restart: unless-stopped
+    labels:
+      - wud.watch=true
     environment:
       - ASPNETCORE_URLS=http://+:5000
       - ASPNETCORE_ENVIRONMENT=Production
@@ -10,5 +12,10 @@ services:
       - Plex__AdminToken=${PLEX_ADMIN_TOKEN}
       - Serilog__WriteTo__0__Name=Seq
       - Serilog__WriteTo__0__Args__serverUrl=http://192.168.1.15:5341
+    volumes:
+      - dataprotection:/root/.aspnet/DataProtection-Keys
     ports:
       - "5010:5000"
+
+volumes:
+  dataprotection:
